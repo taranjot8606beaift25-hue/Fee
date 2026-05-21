@@ -1,0 +1,3285 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PulseAI | Intelligent Fitness Platform</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Black+Ops+One&family=Exo+2:wght@300;400;700&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ── THEME TOKENS ── */
+    :root {
+      --fire:    #FF4500;
+      --ember:   #FF8C00;
+      --neon:    #00FFD1;
+      --volt:    #CAFF00;
+      --purple:  #7B2FFF;
+      --dark:    #0A0A0F;
+      --card-bg: #12121A;
+      --text:    #F0F0F0;
+      --muted:   #888;
+      --radius:  14px;
+      --bg:      #0A0A0F;
+      --surface: #12121A;
+      --border:  rgba(255,255,255,0.06);
+    }
+
+    [data-theme="light"] {
+      --bg:      #F4F4F0;
+      --dark:    #F4F4F0;
+      --surface: #FFFFFF;
+      --card-bg: #FFFFFF;
+      --text:    #111111;
+      --muted:   #555;
+      --border:  rgba(0,0,0,0.08);
+    }
+
+    /* ── SCROLL PROGRESS BAR ── */
+    #scroll-progress {
+      position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+      background: linear-gradient(90deg, var(--fire), var(--volt), var(--neon));
+      z-index: 100000;
+      transition: width 0.1s linear;
+      box-shadow: 0 0 8px rgba(255,69,0,0.6);
+    }
+
+    /* ── LOADING SCREEN ── */
+    #loader {
+      position: fixed; inset: 0; background: #0A0A0F;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 999999;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
+    }
+    #loader.hidden { opacity: 0; visibility: hidden; }
+    .loader-logo {
+      font-family: 'Black Ops One', cursive;
+      font-size: 3rem;
+      background: linear-gradient(90deg, var(--fire), var(--ember), var(--volt));
+      background-clip: text; -webkit-background-clip: text;
+      color: transparent; -webkit-text-fill-color: transparent;
+      letter-spacing: 4px;
+      animation: loaderPulse 1s ease-in-out infinite alternate;
+
+
+
+
+
+    }
+    .loader-logo span { color: var(--neon); -webkit-text-fill-color: var(--neon); }
+    @keyframes loaderPulse {
+      from { opacity: 0.5; transform: scale(0.97); }
+      to   { opacity: 1;   transform: scale(1); }
+    }
+    .loader-bar {
+      margin-top: 2rem; width: 200px; height: 3px;
+      background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;
+    }
+    .loader-bar-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--fire), var(--neon));
+      border-radius: 3px;
+      animation: loaderFill 1.8s ease forwards;
+    }
+    @keyframes loaderFill { to { width: 100%; } }
+    .loader-text {
+      margin-top: 1rem; font-size: 0.7rem;
+      letter-spacing: 4px; text-transform: uppercase;
+      color: var(--muted); font-family: 'Barlow Condensed', sans-serif;
+      animation: loaderBlink 1s ease infinite;
+    }
+    @keyframes loaderBlink { 0%,100%{opacity:0.4} 50%{opacity:1} }
+
+    /* ── CURSOR GLOW ── */
+    #cursor-glow {
+      position: fixed; pointer-events: none; z-index: 99998;
+      width: 320px; height: 320px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,255,209,0.06) 0%, transparent 70%);
+      transform: translate(-50%, -50%);
+      transition: transform 0.08s linear;
+    }
+
+    /* ── CLICK RIPPLE ── */
+    .click-ripple {
+      position: fixed; pointer-events: none; z-index: 99997;
+      width: 30px; height: 30px; border-radius: 50%;
+      border: 2px solid var(--neon);
+      transform: translate(-50%, -50%) scale(0);
+      animation: rippleOut 0.5s ease forwards;
+    }
+    @keyframes rippleOut {
+      to { transform: translate(-50%, -50%) scale(3); opacity: 0; }
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Exo 2', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      margin: 0;
+      transition: background 0.4s ease, color 0.4s ease;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.5;
+    }
+
+    /* ── NAV / HEADER ── */
+    nav {
+      position: fixed; top: 0; width: 100%; z-index: 999;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 5%;
+      box-sizing: border-box;
+      background: rgba(10,10,15,0.88);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      transition: padding 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+    }
+
+    nav.scrolled {
+      padding: 0.55rem 5%;
+      background: rgba(10,10,15,0.97);
+      box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+      border-bottom-color: rgba(255,69,0,0.2);
+    }
+
+    [data-theme="light"] nav {
+      background: rgba(244,244,240,0.92);
+    }
+    [data-theme="light"] nav.scrolled {
+      background: rgba(244,244,240,0.98);
+    }
+
+    .logo {
+      font-family: 'Black Ops One', cursive;
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      background: linear-gradient(90deg, var(--fire), var(--ember), var(--volt));
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 2px;
+    }
+    .logo span { color: var(--neon); -webkit-text-fill-color: var(--neon); }
+
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+
+    /* ── THEME TOGGLE ── */
+    .theme-toggle {
+      background: none; border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 50px; padding: 0.4rem 0.9rem;
+      cursor: pointer; font-size: 1rem;
+      color: var(--text);
+      transition: all 0.25s;
+      display: flex; align-items: center; gap: 0.4rem;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.8rem; letter-spacing: 1px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .theme-toggle:hover { border-color: var(--neon); color: var(--neon); }
+    [data-theme="light"] .theme-toggle { border-color: rgba(0,0,0,0.2); }
+
+    nav ul {
+      list-style: none;
+      display: flex; gap: clamp(1rem, 2.5vw, 2.5rem);
+      flex-wrap: wrap;
+      margin: 0; padding: 0;
+    }
+
+    nav ul a {
+      text-decoration: none;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: clamp(0.85rem, 1.5vw, 1.05rem);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      transition: color 0.2s;
+    }
+
+    nav ul a:hover { color: var(--neon); }
+
+    .nav-cta {
+      background: linear-gradient(135deg, var(--fire), var(--purple));
+      color: #fff !important;
+      padding: 0.5rem 1.2rem;
+      border-radius: 50px;
+      -webkit-text-fill-color: #fff !important;
+      transition: transform 0.2s, box-shadow 0.2s !important;
+      cursor: pointer;
+    }
+
+    .nav-cta:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(255,69,0,0.5);
+    }
+
+    .menu-toggle { display: none; }
+
+    .hamburger {
+      display: none;
+      flex-direction: column; gap: 5px; cursor: pointer;
+    }
+
+    .hamburger span {
+      display: block; width: 26px; height: 3px;
+      background: var(--neon); border-radius: 3px;
+      transition: all 0.3s;
+    }
+
+    @media (max-width: 768px) {
+      .hamburger { display: flex; }
+      nav ul {
+        position: fixed; top: 64px; right: 0;
+        flex-direction: column; gap: 0;
+        background: rgba(10,10,15,0.97);
+        width: 240px; height: 100vh;
+        padding: 2rem 1.5rem;
+        transform: translateX(100%);
+        transition: transform 0.35s ease;
+        border-left: 1px solid rgba(255,255,255,0.06);
+      }
+      nav ul a { font-size: 1.1rem; padding: 0.7rem 0; display: block; }
+      .menu-toggle:checked ~ ul { transform: translateX(0); }
+      .nav-right { gap: 0.5rem; }
+      .theme-toggle span { display: none; }
+    }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      text-align: center;
+      padding: clamp(5rem, 10vw, 10rem) 5% 4rem;
+      position: relative;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    #hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 30%, rgba(255,69,0,0.22) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 70%, rgba(123,47,255,0.22) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 40% at 50% 80%, rgba(0,255,209,0.12) 0%, transparent 60%),
+        url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1600&q=80') center/cover no-repeat;
+      animation: meshShift 10s ease-in-out infinite alternate;
+    }
+
+    @keyframes meshShift {
+      0%   { background-position: 20% 30%, 80% 70%, 50% 80%, center; filter: brightness(0.5) saturate(1.3); }
+      100% { background-position: 30% 20%, 70% 80%, 60% 70%, center; filter: brightness(0.4) saturate(1.5); }
+    }
+
+    /* Parallax layer */
+    .hero-parallax {
+      position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(ellipse 40% 30% at var(--mx,50%) var(--my,50%),
+        rgba(0,255,209,0.07) 0%, transparent 70%);
+      transition: background 0.1s linear;
+    }
+
+    .hero-inner { position: relative; z-index: 2; max-width: 900px; }
+
+    .hero-badge {
+      display: inline-block;
+      background: rgba(0,255,209,0.12);
+      border: 1px solid var(--neon);
+      color: var(--neon);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(0.7rem, 1.5vw, 0.9rem);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      padding: 0.4rem 1.2rem;
+      border-radius: 50px;
+      margin-bottom: 1.5rem;
+      animation: fadeSlideDown 0.8s ease both;
+    }
+
+    @keyframes fadeSlideDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-title {
+      font-family: 'Black Ops One', cursive;
+      font-size: clamp(2.8rem, 9vw, 7rem);
+      line-height: 1;
+      letter-spacing: -1px;
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+      animation: fadeSlideUp 0.9s 0.1s ease both;
+    }
+
+    .hero-title .line1 { color: #fff; }
+    .hero-title .line2 {
+      background: linear-gradient(90deg, var(--fire) 0%, var(--ember) 40%, var(--volt) 100%);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-sub {
+      font-size: clamp(1rem, 2.5vw, 1.3rem);
+      color: rgba(240,240,240,0.7);
+      max-width: 600px; margin: 1.5rem auto 2.5rem;
+      font-weight: 300;
+      animation: fadeSlideUp 1s 0.2s ease both;
+    }
+
+    .hero-btns {
+      display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+      animation: fadeSlideUp 1s 0.35s ease both;
+    }
+
+    .btn {
+      display: inline-block;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: clamp(0.9rem, 2vw, 1.1rem);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 0.85rem 2.5rem;
+      border-radius: 50px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--fire), var(--ember));
+      color: #fff;
+      box-shadow: 0 0 30px rgba(255,69,0,0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px) scale(1.04);
+      box-shadow: 0 0 50px rgba(255,69,0,0.65);
+    }
+
+    .btn-outline {
+      border: 2px solid var(--neon);
+      color: var(--neon);
+      background: transparent;
+    }
+
+    .btn-outline:hover {
+      background: var(--neon);
+      color: var(--dark);
+      transform: translateY(-3px);
+    }
+
+    /* ── STATS BAR (animated counters) ── */
+    .stats-bar {
+      background: var(--surface);
+      border-top: 1px solid rgba(255,255,255,0.05);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      display: flex; justify-content: center; flex-wrap: wrap;
+    }
+
+    .stat {
+      padding: clamp(1.2rem, 3vw, 2rem) clamp(1.5rem, 5vw, 4rem);
+      text-align: center;
+      border-right: 1px solid rgba(255,255,255,0.06);
+      flex: 1; min-width: 140px;
+    }
+
+    .stat:last-child { border-right: none; }
+
+    .stat-num {
+      font-family: 'Black Ops One', cursive;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      background: linear-gradient(90deg, var(--volt), var(--neon));
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+    .stat-label {
+      font-size: 0.8rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 0.3rem;
+    }
+
+    section { padding: clamp(4rem, 8vw, 8rem) 5%; }
+
+    .section-tag {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.8rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--neon);
+      margin-bottom: 0.7rem;
+      display: block;
+    }
+
+    .section-title {
+      font-family: 'Black Ops One', cursive;
+      font-size: clamp(1.8rem, 5vw, 3.5rem);
+      line-height: 1.1;
+      margin-top: 0;
+      margin-bottom: 1rem;
+    }
+
+    .section-sub {
+      color: var(--muted);
+      max-width: 560px;
+      font-size: clamp(0.9rem, 2vw, 1.05rem);
+      line-height: 1.7;
+    }
+
+    #services { background: var(--bg); }
+    .services-header { text-align: center; margin-bottom: 3.5rem; }
+    .services-header .section-sub { margin: 0.5rem auto 0; }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap: 1.5rem;
+      max-width: 1200px; margin: 0 auto;
+    }
+
+    .service-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      text-decoration: none;
+      color: var(--text);
+      display: block;
+      transition: transform 0.3s, box-shadow 0.3s;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .service-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+
+    .card-img {
+      width: 100%; height: 200px;
+      object-fit: cover;
+      display: block;
+      filter: saturate(1.2);
+      transition: filter 0.3s, transform 0.4s;
+    }
+
+    .service-card:hover .card-img {
+      transform: scale(1.04);
+      filter: saturate(1.6) brightness(1.05);
+    }
+
+    .card-body { padding: 1.5rem; }
+    .card-icon { font-size: 2rem; margin-bottom: 0.6rem; display: block; }
+
+    .card-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 1.3rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-desc { color: var(--muted); font-size: 0.92rem; line-height: 1.6; }
+
+    .card-tag {
+      display: inline-block;
+      margin-top: 1rem;
+      font-size: 0.72rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 0.3rem 0.8rem;
+      border-radius: 50px;
+      font-weight: 700;
+    }
+
+    .tag-fire   { background: rgba(255,69,0,0.15);  color: var(--fire);  border: 1px solid rgba(255,69,0,0.3); }
+    .tag-neon   { background: rgba(0,255,209,0.1);  color: var(--neon);  border: 1px solid rgba(0,255,209,0.25); }
+    .tag-volt   { background: rgba(202,255,0,0.1);  color: var(--volt);  border: 1px solid rgba(202,255,0,0.25); }
+
+    #how {
+      background: linear-gradient(160deg, #0e0e1a 0%, #0A0A0F 100%);
+      border-top: 1px solid rgba(255,255,255,0.04);
+    }
+    [data-theme="light"] #how { background: #eaeae6; }
+
+    .how-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(2rem, 6vw, 6rem);
+      align-items: center;
+      max-width: 1200px; margin: 0 auto;
+    }
+
+    @media (max-width: 768px) { .how-wrap { grid-template-columns: 1fr; } }
+
+    .how-img {
+      border-radius: var(--radius);
+      width: 100%;
+      object-fit: cover;
+      height: clamp(300px, 50vw, 520px);
+      box-shadow: 0 0 80px rgba(123,47,255,0.25);
+      filter: saturate(1.3);
+    }
+
+    .steps { display: flex; flex-direction: column; gap: 1.8rem; margin-top: 2.5rem; }
+    .step { display: flex; gap: 1.2rem; align-items: flex-start; }
+
+    .step-num {
+      font-family: 'Black Ops One', cursive;
+      font-size: 2rem;
+      line-height: 1;
+      min-width: 2.5rem;
+      background: linear-gradient(135deg, var(--fire), var(--ember));
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+    .step-text h4 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 1.05rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin: 0 0 0.3rem 0;
+    }
+
+    .step-text p { color: var(--muted); font-size: 0.9rem; line-height: 1.6; margin: 0; }
+
+    #plans { background: var(--bg); }
+    .plans-header { text-align: center; margin-bottom: 3rem; }
+    .plans-header .section-sub { margin: 0.5rem auto 0; }
+
+    /* ── ANIMATED TAB INDICATOR ── */
+    .tabs-wrap { position: relative; display: flex; justify-content: center; margin-bottom: 2.5rem; }
+    .tabs {
+      display: flex; gap: 0; flex-wrap: nowrap;
+      position: relative;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 50px; padding: 5px;
+    }
+
+    .tab-indicator {
+      position: absolute;
+      top: 5px; left: 5px;
+      height: calc(100% - 10px);
+      background: linear-gradient(135deg, var(--fire), var(--purple));
+      border-radius: 50px;
+      transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 0;
+      box-shadow: 0 0 15px rgba(255,69,0,0.3);
+    }
+
+    .tab-btn {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700; font-size: 1rem;
+      letter-spacing: 2px; text-transform: uppercase;
+      padding: 0.55rem 1.6rem;
+      border-radius: 50px;
+      text-decoration: none;
+      color: var(--muted);
+      border: none; background: none;
+      cursor: pointer;
+      transition: color 0.25s;
+      position: relative; z-index: 1;
+      white-space: nowrap;
+    }
+
+    .tab-btn.active { color: #fff; }
+
+    .plans-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+      gap: 1.5rem;
+      max-width: 1100px; margin: 0 auto;
+    }
+
+    .plan-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      text-decoration: none;
+      color: var(--text);
+      display: block;
+      transition: transform 0.3s, box-shadow 0.3s;
+      cursor: pointer;
+    }
+
+    .plan-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.45);
+    }
+
+    .plan-img {
+      width: 100%; height: 170px; object-fit: cover;
+      filter: saturate(1.3);
+      transition: transform 0.4s;
+    }
+
+    .plan-card:hover .plan-img { transform: scale(1.05); }
+    .plan-body { padding: 1.2rem 1.4rem; }
+    .plan-meta { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
+
+    .pill {
+      font-size: 0.68rem; letter-spacing: 1.5px; text-transform: uppercase;
+      padding: 0.2rem 0.7rem; border-radius: 50px; font-weight: 700;
+    }
+
+    .pill-fire   { background: rgba(255,69,0,0.2);   color: var(--fire); }
+    .pill-neon   { background: rgba(0,255,209,0.15); color: var(--neon); }
+    .pill-volt   { background: rgba(202,255,0,0.15); color: var(--volt); }
+    .pill-purple { background: rgba(123,47,255,0.2); color: #c897ff; }
+
+    .plan-name {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900; font-size: 1.1rem;
+      letter-spacing: 1px; text-transform: uppercase;
+      margin-bottom: 0.35rem;
+    }
+
+    .plan-desc { color: var(--muted); font-size: 0.85rem; line-height: 1.5; }
+
+    #ai {
+      background: linear-gradient(135deg, #0e0620 0%, #0A0A0F 60%, #0d1a14 100%);
+      border-top: 1px solid rgba(255,255,255,0.04);
+    }
+    [data-theme="light"] #ai { background: #e8e8f0; }
+
+    .ai-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(2rem, 6vw, 6rem);
+      align-items: center;
+      max-width: 1200px; margin: 0 auto;
+    }
+
+    @media (max-width: 768px) {
+      .ai-wrap { grid-template-columns: 1fr; }
+      .ai-img-wrap { order: -1; }
+    }
+
+    .ai-img-wrap { position: relative; }
+
+    .ai-img {
+      width: 100%; border-radius: var(--radius);
+      object-fit: cover;
+      height: clamp(300px, 50vw, 500px);
+      filter: saturate(1.4);
+    }
+
+    .ai-badge {
+      position: absolute; bottom: 1.5rem; left: 1.5rem;
+      background: rgba(10,10,15,0.6);
+      border: 1px solid var(--neon);
+      backdrop-filter: blur(8px);
+      padding: 0.8rem 1.2rem;
+      border-radius: var(--radius);
+      font-size: 0.85rem;
+    }
+
+    .ai-badge strong {
+      display: block;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.1rem; letter-spacing: 1px; color: var(--neon);
+    }
+
+    .features { display: flex; flex-direction: column; gap: 1.2rem; margin-top: 2rem; }
+
+    .feature {
+      display: flex; gap: 1rem; align-items: flex-start;
+      padding: 1rem;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      transition: border-color 0.25s, background 0.25s;
+    }
+
+    .feature:hover {
+      border-color: rgba(0,255,209,0.3);
+      background: rgba(0,255,209,0.04);
+    }
+
+    .feat-icon { font-size: 1.6rem; flex-shrink: 0; }
+    .feat-text h4 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700; font-size: 1rem;
+      letter-spacing: 1px; text-transform: uppercase;
+      color: var(--text); margin: 0 0 0.25rem 0;
+    }
+    .feat-text p { color: var(--muted); font-size: 0.87rem; line-height: 1.5; margin: 0; }
+
+    #pricing { background: var(--bg); }
+    .pricing-header { text-align: center; margin-bottom: 3rem; }
+    .pricing-header .section-sub { margin: 0.5rem auto 0; }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap: 1.5rem;
+      max-width: 1000px; margin: 0 auto;
+    }
+
+    .price-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      text-align: center;
+      position: relative;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .price-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+
+    .price-card.featured {
+      border-color: rgba(255,69,0,0.4);
+      background: linear-gradient(160deg, #1a0d08 0%, var(--card-bg) 100%);
+    }
+    [data-theme="light"] .price-card.featured { background: linear-gradient(160deg, #fff0ec 0%, #fff 100%); }
+
+    .price-badge {
+      position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+      background: linear-gradient(135deg, var(--fire), var(--ember));
+      color: #fff; font-size: 0.72rem;
+      letter-spacing: 2px; text-transform: uppercase;
+      padding: 0.3rem 1rem; border-radius: 50px; font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .plan-name2 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900; font-size: 1.1rem;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 0.8rem;
+    }
+
+    .price-amt {
+      font-family: 'Black Ops One', cursive;
+      font-size: clamp(3rem, 6vw, 4.5rem);
+      line-height: 1;
+      margin-bottom: 1.5rem;
+    }
+
+    .price-amt sup { font-size: 1.5rem; vertical-align: super; }
+    .price-amt sub { font-size: 1rem; color: var(--muted); font-family: 'Exo 2', sans-serif; font-weight: 300; }
+
+    .price-perks {
+      list-style: none; padding: 0; margin: 0 0 2rem;
+      display: flex; flex-direction: column; gap: 0.8rem;
+      text-align: left;
+    }
+
+    .price-perks li {
+      font-size: 0.9rem; color: var(--muted);
+      padding-left: 1.4rem; position: relative;
+    }
+
+    .price-perks li::before {
+      content: '→';
+      position: absolute; left: 0;
+      color: var(--neon); font-weight: 700;
+    }
+
+    .btn-price {
+      display: block; width: 100%;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900; font-size: 1rem;
+      letter-spacing: 2px; text-transform: uppercase;
+      text-decoration: none;
+      padding: 0.85rem 1rem;
+      border-radius: 50px;
+      cursor: pointer; border: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-price-outline {
+      border: 2px solid rgba(255,255,255,0.15);
+      background: transparent; color: var(--text);
+    }
+
+    .btn-price-outline:hover { border-color: var(--neon); color: var(--neon); }
+
+    .btn-price-fire {
+      background: linear-gradient(135deg, var(--fire), var(--ember));
+      color: #fff;
+      box-shadow: 0 0 30px rgba(255,69,0,0.35);
+    }
+
+    .btn-price-fire:hover {
+      transform: scale(1.04);
+      box-shadow: 0 0 50px rgba(255,69,0,0.6);
+    }
+
+    #testimonials {
+      background: linear-gradient(135deg, #0d1a14, #0A0A0F);
+      border-top: 1px solid rgba(255,255,255,0.04);
+    }
+    [data-theme="light"] #testimonials { background: #e8f0eb; }
+
+    .test-header { text-align: center; margin-bottom: 3rem; }
+
+    .test-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap: 1.5rem;
+      max-width: 1100px; margin: 0 auto;
+    }
+
+    .test-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.8rem;
+      position: relative;
+      transition: transform 0.3s;
+    }
+
+    .test-card:hover { transform: translateY(-5px); }
+
+    .test-card::before {
+      content: '"';
+      position: absolute; top: 1rem; right: 1.5rem;
+      font-family: 'Black Ops One', cursive;
+      font-size: 5rem; line-height: 1;
+      color: rgba(202,255,0,0.08);
+    }
+
+    .stars { color: #FFD700; font-size: 1rem; margin-bottom: 0.8rem; }
+    .test-text { color: rgba(240,240,240,0.8); font-size: 0.92rem; line-height: 1.7; margin-bottom: 1.2rem; font-style: italic; }
+    [data-theme="light"] .test-text { color: rgba(0,0,0,0.7); }
+    .test-user { display: flex; align-items: center; gap: 0.8rem; }
+
+    .user-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      object-fit: cover; border: 2px solid var(--neon);
+      filter: saturate(1.3);
+    }
+
+    .user-name { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1rem; letter-spacing: 1px; }
+    .user-title { color: var(--muted); font-size: 0.78rem; }
+
+    #cta {
+      padding: clamp(4rem, 8vw, 8rem) 5%;
+      background:
+        radial-gradient(ellipse 70% 60% at 10% 50%, rgba(255,69,0,0.18) 0%, transparent 60%),
+        radial-gradient(ellipse 70% 60% at 90% 50%, rgba(123,47,255,0.18) 0%, transparent 60%),
+        url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=1600&q=80') center/cover no-repeat;
+      position: relative; text-align: center;
+    }
+
+    #cta::before { content: ''; position: absolute; inset: 0; background: rgba(10,10,15,0.75); }
+    .cta-inner { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; }
+
+    .cta-inner h2 {
+      font-family: 'Black Ops One', cursive;
+      font-size: clamp(2rem, 6vw, 4rem);
+      line-height: 1.05; margin-top: 0; margin-bottom: 1rem;
+    }
+
+    .cta-inner h2 span {
+      background: linear-gradient(90deg, var(--fire), var(--volt));
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+    .cta-inner p { color: rgba(240,240,240,0.7); font-size: clamp(0.95rem, 2vw, 1.15rem); margin-bottom: 2rem; line-height: 1.6; }
+
+    footer { background: #060608; border-top: 1px solid rgba(255,255,255,0.06); padding: clamp(3rem, 5vw, 5rem) 5% 2rem; }
+    [data-theme="light"] footer { background: #e0e0dc; }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr repeat(3, 1fr);
+      gap: 2.5rem;
+      max-width: 1200px; margin: 0 auto 3rem;
+    }
+
+    @media (max-width: 900px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 500px) { .footer-grid { grid-template-columns: 1fr; } }
+
+    .footer-brand .logo { font-size: 1.6rem; }
+    .footer-brand p { color: var(--muted); font-size: 0.88rem; line-height: 1.7; margin-top: 0.8rem; max-width: 260px; }
+    .footer-socials { display: flex; gap: 0.7rem; margin-top: 1.2rem; }
+
+    .social-link {
+      width: 38px; height: 38px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 50%;
+      font-size: 1rem;
+      text-decoration: none;
+      color: var(--muted);
+      transition: all 0.25s;
+    }
+
+    .social-link:hover { border-color: var(--neon); color: var(--neon); background: rgba(0,255,209,0.08); }
+
+    .footer-col h5 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700; font-size: 0.85rem;
+      letter-spacing: 3px; text-transform: uppercase;
+      color: var(--text); margin-top: 0; margin-bottom: 1rem;
+    }
+
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; padding: 0; margin: 0; }
+    .footer-col ul a { text-decoration: none; color: var(--muted); font-size: 0.88rem; transition: color 0.2s; }
+    .footer-col ul a:hover { color: var(--neon); }
+
+    .footer-bottom {
+      border-top: 1px solid rgba(255,255,255,0.05);
+      padding-top: 2rem;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 1rem;
+      max-width: 1200px; margin: 0 auto;
+    }
+
+    .footer-bottom p { color: var(--muted); font-size: 0.82rem; margin: 0; }
+    .footer-bottom a { color: var(--neon); text-decoration: none; }
+
+    @keyframes revealUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal { animation: revealUp 0.7s ease both; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--dark); }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(var(--fire), var(--purple)); border-radius: 3px; }
+
+    .pulse-dot {
+      display: inline-block; width: 10px; height: 10px;
+      background: var(--neon); border-radius: 50%;
+      margin-right: 0.5rem;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(0,255,209,0.6); }
+      50%       { box-shadow: 0 0 0 8px rgba(0,255,209,0); }
+    }
+
+    .hover-lift { transition: transform 0.25s; }
+    .hover-lift:hover { transform: translateY(-4px); }
+
+    @media (max-width: 480px) {
+      .tabs { gap: 0.5rem; }
+      .tab-btn { font-size: 0.85rem; padding: 0.5rem 1.2rem; }
+    }
+    
+
+
+    /* ── AI DIET PLANNER ── */
+    #diet {
+      background:
+        radial-gradient(ellipse 70% 55% at 12% 20%, rgba(202,255,0,0.12) 0%, transparent 58%),
+        radial-gradient(ellipse 65% 55% at 88% 75%, rgba(0,255,209,0.13) 0%, transparent 56%),
+        linear-gradient(135deg, #07130f 0%, #0A0A0F 62%, #13091c 100%);
+      border-top: 1px solid rgba(255,255,255,0.04);
+      position: relative;
+      overflow: hidden;
+    }
+    [data-theme="light"] #diet { background: #eef4ec; }
+    .diet-wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: clamp(2rem, 5vw, 4rem);
+      align-items: start;
+    }
+    @media (max-width: 920px) { .diet-wrap { grid-template-columns: 1fr; } }
+    .diet-panel, .diet-result {
+      background: rgba(18,18,26,0.82);
+      border: 1px solid rgba(0,255,209,0.16);
+      border-radius: 24px;
+      padding: clamp(1.4rem, 3vw, 2rem);
+      box-shadow: 0 24px 75px rgba(0,0,0,0.36), inset 0 0 28px rgba(0,255,209,0.035);
+      backdrop-filter: blur(16px);
+    }
+    [data-theme="light"] .diet-panel, [data-theme="light"] .diet-result { background: rgba(255,255,255,0.9); }
+    .diet-form { display: grid; gap: 14px; margin-top: 1.8rem; }
+    .diet-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 560px) { .diet-row { grid-template-columns: 1fr; } }
+    .diet-field label {
+      display: block;
+      color: var(--muted);
+      font-family: 'Barlow Condensed', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-size: 0.78rem;
+      margin-bottom: 7px;
+    }
+    .diet-input, .diet-select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 13px 14px;
+      background: rgba(255,255,255,0.055);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text);
+      border-radius: 14px;
+      outline: none;
+      font-family: 'Exo 2', sans-serif;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+    .diet-select option { background: #10101a; color: #fff; }
+    .diet-input:focus, .diet-select:focus { border-color: var(--neon); box-shadow: 0 0 16px rgba(0,255,209,0.16); transform: translateY(-1px); }
+    .diet-input.error, .diet-select.error { border-color: var(--fire); box-shadow: 0 0 12px rgba(255,69,0,0.25); animation: shake 0.3s ease; }
+    .diet-generate-btn {
+      margin-top: 6px;
+      border: none;
+      border-radius: 50px;
+      padding: 14px 18px;
+      background: linear-gradient(135deg, var(--fire), var(--purple));
+      color: #fff;
+      cursor: pointer;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 1rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      box-shadow: 0 0 28px rgba(255,69,0,0.25);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .diet-generate-btn:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 0 44px rgba(255,69,0,0.42); }
+    .diet-result-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.4rem; }
+    .diet-score {
+      font-family: 'Black Ops One', cursive;
+      font-size: clamp(2.2rem, 5vw, 3.4rem);
+      line-height: 1;
+      background: linear-gradient(90deg, var(--volt), var(--neon));
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+    .diet-goal-pill {
+      border: 1px solid rgba(202,255,0,0.25);
+      background: rgba(202,255,0,0.09);
+      color: var(--volt);
+      border-radius: 50px;
+      padding: 0.45rem 0.85rem;
+      font-family: 'Barlow Condensed', sans-serif;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-size: 0.76rem;
+    }
+    .macro-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.3rem; }
+    @media (max-width: 560px) { .macro-grid { grid-template-columns: 1fr; } }
+    .macro-card {
+      background: rgba(255,255,255,0.045);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 13px;
+      text-align: center;
+    }
+    .macro-card strong { display:block; color: var(--neon); font-family: 'Black Ops One', cursive; font-size: 1.35rem; }
+    .macro-card span { color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1.5px; }
+    .meal-list { display: grid; gap: 10px; }
+    .meal-item {
+      display: grid;
+      grid-template-columns: 92px 1fr;
+      gap: 12px;
+      align-items: start;
+      padding: 13px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.035);
+    }
+    @media (max-width: 480px) { .meal-item { grid-template-columns: 1fr; } }
+    .meal-time {
+      color: var(--fire);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+    }
+    .meal-name { color: var(--text); font-weight: 700; margin-bottom: 4px; }
+    .meal-info { color: var(--muted); font-size: 0.86rem; line-height: 1.5; }
+    .diet-note { color: var(--muted); font-size: 0.85rem; line-height: 1.6; margin-top: 1rem; }
+
+    /* ── SIDE PANEL ── */
+    .side-panel {
+      position: fixed; top: 0; right: -100%; width: 420px; height: 100vh;
+      background: rgba(10,10,15,.98); backdrop-filter: blur(20px); z-index: 9999;
+      padding: 40px; transition: right 0.5s cubic-bezier(0.4,0,0.2,1); overflow-y: auto;
+      border-left: 1px solid rgba(255,255,255,.08); box-sizing: border-box;
+    }
+    .side-panel.active { right: 0; }
+    
+    .panel-close {
+      font-size: .8rem; letter-spacing: 3px; color: var(--neon);
+      cursor: pointer; margin-bottom: 30px; display: block; text-transform: uppercase;
+      background: none; border: none; padding: 0; font-family: 'Barlow Condensed', sans-serif;
+      transition: opacity 0.2s;
+    }
+    .panel-close:hover { opacity: 0.7; }
+
+    .panel-item {
+      padding: 20px 0; border-bottom: 1px solid rgba(255,255,255,.08);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+
+    .panel-btn {
+      margin-top: 30px; width: 100%; padding: 15px; border: none;
+      background: linear-gradient(135deg,var(--fire),var(--purple));
+      color: #fff; font-weight: 700; letter-spacing: 2px;
+      cursor: pointer; border-radius: 50px; text-transform: uppercase;
+      transition: transform 0.2s, box-shadow 0.2s;
+      font-family: 'Barlow Condensed', sans-serif; font-size: 0.9rem;
+    }
+    .panel-btn:hover { transform: scale(1.02); box-shadow: 0 0 20px rgba(255,69,0,0.4); }
+
+    /* ── BMI MICRO-INTERACTIONS ── */
+    .bmi-input {
+      width: 50%; padding: 10px 12px; background: #1a1a24;
+      border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 8px;
+      font-family: 'Exo 2', sans-serif; font-size: 0.9rem;
+      transition: border-color 0.25s, box-shadow 0.25s;
+      box-sizing: border-box; outline: none;
+    }
+    .bmi-input:focus {
+      border-color: var(--neon);
+      box-shadow: 0 0 10px rgba(0,255,209,0.2);
+    }
+    .bmi-input.error { border-color: var(--fire); box-shadow: 0 0 10px rgba(255,69,0,0.3); animation: shake 0.3s ease; }
+    @keyframes shake {
+      0%,100%{ transform: translateX(0); }
+      25%{ transform: translateX(-5px); }
+      75%{ transform: translateX(5px); }
+    }
+
+    .bmi-calc-btn {
+      width: 100%; padding: 11px; background: var(--neon); color: var(--dark);
+      border: none; font-weight: 700; border-radius: 8px; cursor: pointer;
+      text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px;
+      font-family: 'Barlow Condensed', sans-serif;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .bmi-calc-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,255,209,0.3); }
+    .bmi-calc-btn:active { transform: scale(0.97); }
+
+    .bmi-result-bar {
+      width: 100%; height: 6px; background: rgba(255,255,255,0.08);
+      border-radius: 3px; overflow: hidden; margin-top: 8px;
+    }
+    .bmi-result-fill {
+      height: 100%; width: 0%; border-radius: 3px;
+      transition: width 0.8s cubic-bezier(0.4,0,0.2,1), background 0.4s ease;
+    }
+    .bmi-category { font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; color: var(--muted); }
+
+    /* ── QUICK MODAL ── */
+    .quick-modal {
+      position: fixed; inset: 0; background: rgba(0,0,0,.85);
+      display: flex; justify-content: center; align-items: center;
+      z-index: 9998; opacity: 0; pointer-events: none;
+      transition: opacity 0.35s ease; padding: 20px;
+    }
+    .quick-modal.active { opacity: 1; pointer-events: all; }
+
+    .quick-box {
+      max-width: 1000px; width: 100%; background: #111;
+      border: 1px solid rgba(255,255,255,.1); border-radius: 20px;
+      display: grid; grid-template-columns: 1fr 1fr; overflow: hidden;
+      transform: scale(0.9) translateY(20px);
+      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+    }
+    .quick-modal.active .quick-box { transform: scale(1) translateY(0); }
+    @media(max-width:900px){ .quick-box { grid-template-columns: 1fr; } }
+
+    .quick-box img { width: 100%; height: 100%; object-fit: cover; min-height: 300px; }
+    .quick-content { padding: 40px; }
+    
+    .quick-content h2 { font-family: 'Black Ops One', cursive; font-size: 2rem; margin-top: 0; margin-bottom: 16px; }
+    .quick-content p { color: #aaa; margin-bottom: 20px; line-height: 1.7; font-size: 0.92rem; }
+    
+    /* ── TOAST ── */
+    .toast {
+      position: fixed; bottom: 30px; right: 30px; background: #111;
+      border: 1px solid var(--neon); padding: 14px 24px; border-radius: 50px;
+      z-index: 99999; transform: translateY(100px); opacity: 0; transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+      font-size: .8rem; letter-spacing: 2px; font-family: 'Barlow Condensed', sans-serif;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    /* ── BACK TO TOP ── */
+    #back-to-top {
+      position: fixed; bottom: 90px; right: 30px; z-index: 9000;
+      width: 46px; height: 46px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--fire), var(--purple));
+      border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; color: #fff;
+      opacity: 0; transform: translateY(20px) scale(0.8);
+      transition: opacity 0.35s ease, transform 0.35s ease, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(255,69,0,0.3);
+    }
+    #back-to-top.visible { opacity: 1; transform: translateY(0) scale(1); }
+    #back-to-top:hover { box-shadow: 0 6px 30px rgba(255,69,0,0.55); transform: translateY(-3px) scale(1.05); }
+
+    /* ── AUTH MODAL ── */
+    #auth-modal {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+      display: flex; justify-content: center; align-items: center;
+      z-index: 99000; opacity: 0; pointer-events: none;
+      transition: opacity 0.35s ease; padding: 20px;
+    }
+    #auth-modal.active { opacity: 1; pointer-events: all; }
+
+    .auth-box {
+      background: #10101a;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px; padding: 40px;
+      width: 100%; max-width: 440px;
+      transform: scale(0.9) translateY(20px);
+      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+    }
+    #auth-modal.active .auth-box { transform: scale(1) translateY(0); }
+
+    .auth-tabs {
+      display: flex; position: relative;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 50px; padding: 5px;
+      margin-bottom: 32px;
+    }
+    .auth-indicator {
+      position: absolute; top: 5px; left: 5px;
+      height: calc(100% - 10px); width: calc(50% - 5px);
+      background: linear-gradient(135deg, var(--fire), var(--purple));
+      border-radius: 50px;
+      transition: left 0.3s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: 0 0 15px rgba(255,69,0,0.35);
+    }
+    .auth-tab-btn {
+      flex: 1; padding: 0.55rem 1rem;
+      background: none; border: none; cursor: pointer;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700; font-size: 1rem;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: var(--muted); position: relative; z-index: 1;
+      transition: color 0.25s; border-radius: 50px;
+    }
+    .auth-tab-btn.active { color: #fff; }
+
+    .auth-form { display: none; flex-direction: column; gap: 14px; }
+    .auth-form.active { display: flex; }
+
+    .auth-input {
+      padding: 12px 16px; background: #1a1a28;
+      border: 1px solid rgba(255,255,255,0.1); color: var(--text);
+      border-radius: 10px; font-family: 'Exo 2', sans-serif; font-size: 0.95rem;
+      outline: none; transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    .auth-input:focus { border-color: var(--neon); box-shadow: 0 0 12px rgba(0,255,209,0.18); }
+
+    .auth-message {
+      display: none;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      line-height: 1.4;
+      letter-spacing: 0.5px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .auth-message.show { display: block; }
+    .auth-message.error {
+      color: #ffb3a3;
+      background: rgba(255,69,0,0.12);
+      border-color: rgba(255,69,0,0.42);
+    }
+    .auth-message.success {
+      color: var(--neon);
+      background: rgba(0,255,209,0.08);
+      border-color: rgba(0,255,209,0.32);
+    }
+
+
+    .auth-submit {
+      padding: 13px; border: none; cursor: pointer; border-radius: 50px;
+      background: linear-gradient(135deg, var(--fire), var(--purple));
+      color: #fff; font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900; font-size: 1.05rem; letter-spacing: 2px; text-transform: uppercase;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin-top: 4px;
+    }
+    .auth-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(255,69,0,0.45); }
+    .auth-submit:active { transform: scale(0.98); }
+
+    .auth-divider {
+      text-align: center; color: var(--muted); font-size: 0.8rem;
+      letter-spacing: 2px; text-transform: uppercase; position: relative;
+    }
+    .auth-divider::before, .auth-divider::after {
+      content: ''; position: absolute; top: 50%; width: 38%;
+      height: 1px; background: rgba(255,255,255,0.08);
+    }
+    .auth-divider::before { left: 0; }
+    .auth-divider::after { right: 0; }
+
+    .auth-social-btns { display: flex; gap: 10px; }
+
+    .iphone-apple-logo {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+      flex-shrink: 0;
+      display: inline-block;
+    }
+    .auth-social-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .auth-social-btn {
+      flex: 1; padding: 10px; background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;
+      color: var(--text); cursor: pointer; font-size: 0.85rem;
+      font-family: 'Barlow Condensed', sans-serif; letter-spacing: 1px;
+      transition: border-color 0.2s, background 0.2s; text-transform: uppercase;
+    }
+    .auth-social-btn:hover { border-color: var(--neon); background: rgba(0,255,209,0.05); }
+
+    .auth-close {
+      display: block; width: 100%; text-align: center;
+      background: none; border: none; color: var(--muted);
+      font-size: 0.78rem; letter-spacing: 2px; text-transform: uppercase;
+      cursor: pointer; margin-top: 18px; font-family: 'Barlow Condensed', sans-serif;
+      transition: color 0.2s;
+    }
+    .auth-close:hover { color: var(--neon); }
+    
+    .auth-box h2 {
+      font-family: 'Black Ops One', cursive;
+      font-size: 1.8rem; margin: 0 0 6px;
+      background: linear-gradient(90deg, var(--fire), var(--volt));
+      background-clip: text; -webkit-background-clip: text;
+      color: transparent; -webkit-text-fill-color: transparent;
+    }
+    .auth-box p { color: var(--muted); font-size: 0.85rem; margin: 0 0 24px; }
+
+    /* panel overlay */
+    .panel-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      z-index: 9998; opacity: 0; pointer-events: none; transition: opacity 0.4s;
+    }
+    .panel-overlay.active { opacity: 1; pointer-events: all; }
+
+
+    /* ── FLOATING OMNI AI VOICE TRAINER ── */
+    .omni-float-btn {
+      position: fixed;
+      right: 28px;
+      bottom: 150px;
+      z-index: 99001;
+      width: 74px;
+      height: 74px;
+      border: 1px solid rgba(0,255,209,0.55);
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 35% 25%, rgba(255,255,255,0.35), transparent 22%),
+        linear-gradient(135deg, rgba(255,69,0,0.96), rgba(123,47,255,0.92) 55%, rgba(0,255,209,0.95));
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 0 28px rgba(0,255,209,0.38), 0 0 55px rgba(255,69,0,0.22);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1px;
+      font-family: 'Black Ops One', cursive;
+      letter-spacing: 1px;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      animation: omniHover 3s ease-in-out infinite;
+    }
+    .omni-float-btn:hover { transform: translateY(-5px) scale(1.06); box-shadow: 0 0 38px rgba(0,255,209,0.55), 0 0 80px rgba(255,69,0,0.35); }
+    .omni-float-btn .omni-mic { font-size: 1.45rem; line-height: 1; filter: drop-shadow(0 0 8px rgba(255,255,255,0.65)); }
+    .omni-float-btn .omni-label { font-size: 0.72rem; }
+    .omni-float-btn.speaking { animation: omniSpeakingPulse 0.85s ease-in-out infinite; }
+    .omni-float-btn.speaking::before, .omni-float-btn.speaking::after {
+      content: '';
+      position: absolute;
+      inset: -8px;
+      border: 1px solid rgba(0,255,209,0.55);
+      border-radius: 50%;
+      animation: omniVoiceWave 1.25s ease-out infinite;
+    }
+    .omni-float-btn.speaking::after { animation-delay: 0.45s; border-color: rgba(202,255,0,0.42); }
+    @keyframes omniHover { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-8px); } }
+    @keyframes omniSpeakingPulse { 0%,100%{ transform: scale(1); } 50%{ transform: scale(1.08); } }
+    @keyframes omniVoiceWave { to { transform: scale(1.6); opacity: 0; } }
+
+    .omni-panel {
+      position: fixed;
+      right: 26px;
+      bottom: 235px;
+      z-index: 99000;
+      width: min(390px, calc(100vw - 34px));
+      background: linear-gradient(160deg, rgba(18,18,26,0.98), rgba(10,10,15,0.96));
+      border: 1px solid rgba(0,255,209,0.28);
+      border-radius: 24px;
+      box-shadow: 0 25px 90px rgba(0,0,0,0.62), inset 0 0 28px rgba(0,255,209,0.035);
+      backdrop-filter: blur(22px);
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(24px) scale(0.92);
+      pointer-events: none;
+      transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    .omni-panel.active { opacity: 1; transform: translateY(0) scale(1); pointer-events: all; }
+    .omni-panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 0%, rgba(255,69,0,0.13), transparent 35%), radial-gradient(circle at 95% 20%, rgba(0,255,209,0.14), transparent 34%);
+      pointer-events: none;
+    }
+    .omni-head {
+      position: relative;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 22px 22px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .omni-kicker { color: var(--neon); font-size: 0.72rem; letter-spacing: 3px; text-transform: uppercase; font-family: 'Barlow Condensed', sans-serif; }
+    .omni-title { margin-top: 5px; font-family: 'Black Ops One', cursive; font-size: 1.65rem; letter-spacing: 1px; background: linear-gradient(90deg, var(--fire), var(--volt)); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
+    .omni-close { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: var(--text); width: 34px; height: 34px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; transition: border-color 0.2s, color 0.2s; }
+    .omni-close:hover { border-color: var(--neon); color: var(--neon); }
+    .omni-body { position: relative; padding: 18px 22px 22px; }
+    .omni-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0.45rem 0.85rem;
+      border: 1px solid rgba(0,255,209,0.25);
+      border-radius: 50px;
+      color: var(--neon);
+      background: rgba(0,255,209,0.06);
+      font-family: 'Barlow Condensed', sans-serif;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-size: 0.76rem;
+      margin-bottom: 14px;
+    }
+    .omni-status-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--neon); box-shadow: 0 0 12px var(--neon); }
+    .omni-status.speaking .omni-status-dot { background: var(--volt); box-shadow: 0 0 16px var(--volt); animation: pulse 0.8s ease-in-out infinite; }
+    .omni-output { color: rgba(240,240,240,0.78); font-size: 0.9rem; line-height: 1.65; margin: 0 0 16px; min-height: 78px; }
+    [data-theme="light"] .omni-output { color: rgba(0,0,0,0.72); }
+    .omni-exercises { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+    .omni-exercise-btn {
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.045);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 11px 10px;
+      cursor: pointer;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      transition: transform 0.18s, border-color 0.18s, background 0.18s;
+    }
+    .omni-exercise-btn:hover { transform: translateY(-2px); border-color: var(--neon); background: rgba(0,255,209,0.08); }
+    .omni-controls { display: flex; gap: 10px; }
+    .omni-action {
+      flex: 1;
+      border: none;
+      border-radius: 50px;
+      padding: 12px;
+      cursor: pointer;
+      color: #fff;
+      background: linear-gradient(135deg, var(--fire), var(--purple));
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      transition: transform 0.18s, box-shadow 0.18s;
+    }
+    .omni-action:hover { transform: translateY(-2px); box-shadow: 0 0 22px rgba(255,69,0,0.35); }
+    .omni-action.secondary { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: var(--text); }
+    @media (max-width: 560px) {
+      .omni-float-btn { right: 18px; bottom: 115px; width: 66px; height: 66px; }
+      .omni-panel { right: 16px; bottom: 195px; }
+      .omni-exercises { grid-template-columns: 1fr; }
+    }
+
+
+
+    /* ── AGE FIRST WORKOUT SETUP ── */
+    #ageGateModal {
+      z-index: 98000;
+      backdrop-filter: blur(16px);
+    }
+    #ageGateModal .age-gate-box {
+      max-width: 560px;
+      grid-template-columns: 1fr;
+      border: 1px solid rgba(0,255,209,0.22);
+      box-shadow: 0 25px 90px rgba(0,0,0,0.65), 0 0 45px rgba(0,255,209,0.12);
+      background:
+        radial-gradient(circle at 10% 0%, rgba(255,69,0,0.16), transparent 35%),
+        radial-gradient(circle at 95% 15%, rgba(0,255,209,0.14), transparent 35%),
+        #10101a;
+    }
+    .age-gate-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0.45rem 0.9rem;
+      border-radius: 50px;
+      border: 1px solid rgba(0,255,209,0.35);
+      color: var(--neon);
+      background: rgba(0,255,209,0.07);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.78rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+    .age-gate-title {
+      font-family: 'Black Ops One', cursive;
+      font-size: clamp(2rem, 6vw, 3rem);
+      line-height: 1;
+      margin: 0 0 12px;
+      background: linear-gradient(90deg, var(--fire), var(--volt));
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+    .age-gate-copy {
+      color: rgba(240,240,240,0.72);
+      line-height: 1.65;
+      margin-bottom: 20px;
+    }
+    [data-theme="light"] .age-gate-copy { color: rgba(0,0,0,0.72); }
+    .age-gate-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .age-gate-row .auth-input {
+      flex: 1;
+      min-width: 0;
+      margin: 0;
+    }
+
+    .body-type-step {
+      display: none;
+      margin-top: 14px;
+      animation: fadeSlideUp 0.35s ease both;
+    }
+    .body-type-step.active { display: block; }
+    .body-type-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin: 14px 0;
+    }
+    .body-type-card {
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.045);
+      color: var(--text);
+      border-radius: 16px;
+      padding: 14px 12px;
+      cursor: pointer;
+      text-align: left;
+      transition: transform 0.18s, border-color 0.18s, background 0.18s, box-shadow 0.18s;
+      font-family: 'Exo 2', sans-serif;
+    }
+    .body-type-card:hover,
+    .body-type-card.selected {
+      transform: translateY(-2px);
+      border-color: var(--neon);
+      background: rgba(0,255,209,0.08);
+      box-shadow: 0 0 20px rgba(0,255,209,0.12);
+    }
+    .body-type-icon { font-size: 1.55rem; display: block; margin-bottom: 6px; }
+    .body-type-name {
+      display: block;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .body-type-desc { display: block; color: var(--muted); font-size: 0.76rem; line-height: 1.35; }
+    .age-back-btn {
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--text);
+      background: rgba(255,255,255,0.05);
+      border-radius: 50px;
+      padding: 13px 18px;
+      cursor: pointer;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    @media(max-width: 560px) {
+      .body-type-grid { grid-template-columns: 1fr; }
+    }
+    .age-submit-btn {
+      border: none;
+      cursor: pointer;
+      border-radius: 50px;
+      padding: 13px 20px;
+      white-space: nowrap;
+      background: linear-gradient(135deg, var(--fire), var(--purple));
+      color: #fff;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 1rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .age-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 0 25px rgba(255,69,0,0.45); }
+    .age-hint {
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.5;
+      margin: 0;
+    }
+    .age-plan-banner {
+      max-width: 1100px;
+      margin: 0 auto 1.5rem;
+      padding: 1rem 1.2rem;
+      border: 1px solid rgba(0,255,209,0.22);
+      border-radius: var(--radius);
+      background: rgba(0,255,209,0.055);
+      color: var(--text);
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .age-plan-banner.active { display: flex; }
+    .age-plan-banner strong {
+      color: var(--neon);
+      font-family: 'Barlow Condensed', sans-serif;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    .age-plan-banner button {
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--text);
+      background: rgba(255,255,255,0.05);
+      border-radius: 50px;
+      padding: 0.55rem 1rem;
+      cursor: pointer;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    .age-plan-banner button:hover { border-color: var(--neon); color: var(--neon); }
+    @media(max-width: 560px) {
+      .age-gate-row { flex-direction: column; align-items: stretch; }
+      .age-submit-btn { width: 100%; }
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- AGE FIRST WORKOUT SETUP MODAL -->
+  <div id="ageGateModal" class="quick-modal active" aria-modal="true" role="dialog">
+    <div class="quick-box age-gate-box">
+      <div class="quick-content">
+        <div class="age-gate-badge"><span class="pulse-dot"></span> AI BODY CALIBRATION</div>
+        <h2 class="age-gate-title">START SMART</h2>
+        <p class="age-gate-copy" id="ageGateCopy">Step 1: Enter your age. PulseAI will identify your age group, then personalize your workout plan based on your body type before opening the main page.</p>
+
+        <div id="ageStep" class="age-step active">
+          <div class="age-gate-row">
+            <input id="userAgeInput" class="auth-input" type="number" min="10" max="100" placeholder="Enter your age" autocomplete="off">
+            <button id="startAgePlanBtn" class="age-submit-btn" type="button">Next</button>
+          </div>
+          <p class="age-hint">Example: 16 = teen plan, 24 = strength plan, 38 = fat-loss plan, 50+ = joint-friendly mobility plan.</p>
+        </div>
+
+        <div id="bodyTypeStep" class="body-type-step">
+          <p class="age-hint">Step 2: Choose your body type. PulseAI will combine your age and body type to create your personalized workout plan, then take you to the main page.</p>
+          <div class="body-type-grid">
+            <button class="body-type-card" type="button" data-body="lean"><span class="body-type-icon">⚡</span><span class="body-type-name">Lean / Skinny</span><span class="body-type-desc">Muscle gain, strength basics, calorie surplus focus.</span></button>
+            <button class="body-type-card" type="button" data-body="average"><span class="body-type-icon">💪</span><span class="body-type-name">Average / Fit</span><span class="body-type-desc">Balanced strength, cardio and athletic conditioning.</span></button>
+            <button class="body-type-card" type="button" data-body="overweight"><span class="body-type-icon">🔥</span><span class="body-type-name">Overweight</span><span class="body-type-desc">Fat loss, low-impact cardio and joint-safe strength.</span></button>
+            <button class="body-type-card" type="button" data-body="muscular"><span class="body-type-icon">🦾</span><span class="body-type-name">Muscular</span><span class="body-type-desc">Advanced hypertrophy, power, mobility and recovery.</span></button>
+          </div>
+          <div class="age-gate-row">
+            <button id="backToAgeBtn" class="age-back-btn" type="button">Back</button>
+            <button id="finishBodyPlanBtn" class="age-submit-btn" type="button">Enter Website</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- LOADING SCREEN -->
+  <div id="loader">
+    <div class="loader-logo">PULSE<span>AI</span></div>
+    <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+    <div class="loader-text">Initializing Core Systems...</div>
+  </div>
+
+  <!-- SCROLL PROGRESS -->
+  <div id="scroll-progress"></div>
+
+  <!-- CURSOR GLOW -->
+  <div id="cursor-glow"></div>
+
+  <!-- BACK TO TOP -->
+  <button id="back-to-top" title="Back to top">↑</button>
+
+  <!-- PANEL OVERLAY -->
+  <div class="panel-overlay" id="panelOverlay"></div>
+
+  <header>
+    <nav id="main-nav">
+      <div class="logo">PULSE<span>AI</span></div>
+      <input type="checkbox" id="nav-trigger" class="menu-toggle">
+      <label for="nav-trigger" class="hamburger">
+        <span></span><span></span><span></span>
+      </label>
+      <ul>
+        <li><a href="#hero">Home</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#how">How It Works</a></li>
+        <li><a href="#plans">Workouts</a></li>
+        <li><a href="#ai">AI Trainer</a></li>
+        <li><a href="#diet">AI Diet</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#testimonials">Reviews</a></li>
+        <li><a href="#" id="openAuthModal" class="nav-cta">Join Now</a></li>
+      </ul>
+      <div class="nav-right">
+        <button class="theme-toggle" id="themeToggle">
+          <span id="themeIcon">☀️</span>
+          <span id="themeLabel">Light</span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section id="hero">
+      <div class="hero-parallax" id="heroParallax"></div>
+      <div class="hero-inner">
+        <span class="hero-badge"><span class="pulse-dot"></span>Next-Gen Fitness Matrix</span>
+        <h1 class="hero-title">
+          <span class="line1">CORRECT THE LAYER</span><br>
+          <span class="line2">EVOLVE YOUR LIMITS</span>
+        </h1>
+        <p class="hero-sub">The world's first adaptive hyper-automated metabolic engine. Synchronize real-time muscular telemetry with high-intensity biometrics.</p>
+        <div class="hero-btns">
+          <a href="#pricing" class="btn btn-primary">Initialize Core</a>
+          <a href="#services" class="btn btn-outline">Explore Protocols</a>
+        </div>
+      </div>
+    </section>
+
+    <div class="stats-bar">
+      <div class="stat"><div class="stat-num counter" data-target="94000" data-suffix="K+">0</div><div class="stat-label">Active Nodes</div></div>
+      <div class="stat"><div class="stat-num counter" data-target="320" data-suffix="M+">0</div><div class="stat-label">Telemetry Tracks</div></div>
+      <div class="stat"><div class="stat-num counter" data-target="99.4" data-suffix="%" data-decimal="1">0</div><div class="stat-label">Accuracy Metric</div></div>
+      <div class="stat"><div class="stat-num">24/7</div><div class="stat-label">Live Monitoring</div></div>
+    </div>
+
+    <section id="services">
+      <div class="services-header">
+        <span class="section-tag">Core Protocols</span>
+        <h2 class="section-title">ENGINEERED PERFORMANCE</h2>
+        <p class="section-sub">Deploy modular data layers targeting exact biometric outputs. Choose your baseline training platform beneath.</p>
+      </div>
+      <div class="services-grid">
+        <a href="#" class="service-card" data-img="https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=800&q=80" data-title="Neural Telemetry" data-desc="Continuous parsing of muscle recruitment metrics via dynamic sensory arrays. Real-time form optimization calibrated down to the millisecond.">
+          <img src="https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=500&q=80" alt="Neural Telemetry" class="card-img">
+          <div class="card-body">
+            <span class="card-icon">🧠</span>
+            <div class="card-title">Neural Telemetry</div>
+            <p class="card-desc">Continuous parsing of muscle recruitment metrics via dynamic sensory arrays. Real-time form optimization calibrated down to the millisecond.</p>
+            <span class="card-tag tag-neon">Active Protocol</span>
+          </div>
+        </a>
+        <a href="#" class="service-card" data-img="https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=800&q=80" data-title="Metabolic Shaping" data-desc="Hyper-personalized VO2 Max targeting designed to permanently alter your resting metabolic rate and sustain caloric burn long post-session.">
+          <img src="https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=500&q=80" alt="Metabolic Shaping" class="card-img">
+          <div class="card-body">
+            <span class="card-icon">🔥</span>
+            <div class="card-title">Metabolic Shaping</div>
+            <p class="card-desc">Hyper-personalized VO2 Max targeting designed to permanently alter your resting metabolic rate and sustain caloric burn long post-session.</p>
+            <span class="card-tag tag-fire">Optimized</span>
+          </div>
+        </a>
+        <a href="#" class="service-card" data-img="https://images.unsplash.com/photo-1517963879433-6ad2b056d712?w=800&q=80" data-title="Hypertrophy Matrices" data-desc="Automated progressive overload computation. Your macrocycles auto-correct based on sleep scores, exertion levels, and velocity thresholds.">
+          <img src="https://images.unsplash.com/photo-1517963879433-6ad2b056d712?w=500&q=80" alt="Hypertrophy Matrices" class="card-img">
+          <div class="card-body">
+            <span class="card-icon">⚡</span>
+            <div class="card-title">Hypertrophy Matrices</div>
+            <p class="card-desc">Automated progressive overload computation. Your macrocycles auto-correct based on sleep scores, exertion levels, and velocity thresholds.</p>
+            <span class="card-tag tag-volt">Adaptive</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <section id="how">
+      <div class="how-wrap">
+        <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&q=80" alt="Training session" class="how-img">
+        <div>
+          <span class="section-tag">Execution Flow</span>
+          <h2 class="section-title">THE EXECUTION ENGINE</h2>
+          <p class="section-sub">PulseAI bridges human physiology with continuous computational feedback loops. Establish peak synchronization in three distinct steps.</p>
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">01</div>
+              <div class="step-text">
+                <h4>Biometric Pairing</h4>
+                <p>Link your fitness hardware, heart monitors, or wearable arrays. Our system reads raw output pipelines with absolute zero data lag.</p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">02</div>
+              <div class="step-text">
+                <h4>Generative Modeling</h4>
+                <p>The system builds a dynamic digital twin of your metabolic behavior, scaling workout intensity to match internal structural resilience.</p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">03</div>
+              <div class="step-text">
+                <h4>Autonomous Calibration</h4>
+                <p>As you lift, run, or rest, your structural framework adapts. PulseAI rewrites your workout parameters live to hit ideal target thresholds.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="plans">
+      <div class="plans-header">
+        <span class="section-tag">Training Modules</span>
+        <h2 class="section-title">TARGETED WORKOUT MODULES</h2>
+        <p class="section-sub">Filter your physical parameters. These base templates serve as the foundation for the AI engine to customize live.</p>
+      </div>
+      <div class="tabs-wrap">
+        <div class="tabs" id="tabsContainer">
+          <div class="tab-indicator" id="tabIndicator"></div>
+          <button class="tab-btn active" data-filter="all">All</button>
+          <button class="tab-btn" data-filter="strength">Strength</button>
+          <button class="tab-btn" data-filter="endurance">Endurance</button>
+          <button class="tab-btn" data-filter="recovery">Recovery</button>
+        </div>
+      </div>
+      <div class="age-plan-banner" id="agePlanBanner"><span id="agePlanText"><strong>AI Plan Ready</strong></span><button type="button" id="changeAgeBtn">Change Age</button></div>
+      <div class="plans-grid" id="plansGrid"></div>
+    </section>
+
+    <section id="ai">
+      <div class="ai-wrap">
+        <div>
+          <span class="section-tag">AI Engine</span>
+          <h2 class="section-title">MEET OMNI: YOUR TRAINER</h2>
+          <p class="section-sub">Not a standard logbook application. Omni tracks real-time voice inputs, micro-expressions, and bar speed variations to build your perfect path.</p>
+          <div class="features">
+            <div class="feature">
+              <div class="feat-icon">🎙️</div>
+              <div class="feat-text">
+                <h4>Vocal Biometric Diagnostics</h4>
+                <p>Speak to Omni during sets. Fatigue markers are indexed through micro-variations in your voice pitch, adjusting load parameters accordingly.</p>
+              </div>
+            </div>
+            <div class="feature">
+              <div class="feat-icon">📊</div>
+              <div class="feat-text">
+                <h4>Predictive Overreach Safeties</h4>
+                <p>System detects physical failure up to two sets before it manifests, preventing systemic burnout and safeguarding connective tissue integrity.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="ai-img-wrap">
+          <img src="https://images.stockcake.com/public/0/6/d/06d4670c-b17f-479e-ae98-af9d8551b60f/neon-gym-future-stockcake.jpg" alt="AI holographic metrics screen" class="ai-img">
+          <div class="ai-badge">
+            <strong>SYSTEM: STATUS REGULATING</strong>
+            Omni Engine online — Processing 12,400 inputs/sec
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+
+    <section id="diet" class="reveal">
+      <div class="diet-wrap">
+        <div class="diet-panel">
+          <span class="section-tag">Nutrition Engine</span>
+          <h2 class="section-title">AI DIET PLANNER</h2>
+          <p class="section-sub">Enter your body metrics and goal. PulseAI will calculate calories, macros, and a clean meal plan instantly.</p>
+          <div class="diet-form">
+            <div class="diet-row">
+              <div class="diet-field">
+                <label for="dietAge">Age</label>
+                <input id="dietAge" class="diet-input" type="number" min="10" max="100" placeholder="20">
+              </div>
+              <div class="diet-field">
+                <label for="dietGender">Gender</label>
+                <select id="dietGender" class="diet-select">
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
+              </div>
+            </div>
+            <div class="diet-row">
+              <div class="diet-field">
+                <label for="dietWeight">Weight (kg)</label>
+                <input id="dietWeight" class="diet-input" type="number" min="25" max="250" placeholder="70">
+              </div>
+              <div class="diet-field">
+                <label for="dietHeight">Height (cm)</label>
+                <input id="dietHeight" class="diet-input" type="number" min="100" max="230" placeholder="175">
+              </div>
+            </div>
+            <div class="diet-row">
+              <div class="diet-field">
+                <label for="dietGoal">Goal</label>
+                <select id="dietGoal" class="diet-select">
+                  <option value="fatloss">Fat Loss</option>
+                  <option value="maintain">Maintain Fitness</option>
+                  <option value="musclegain">Muscle Gain</option>
+                </select>
+              </div>
+              <div class="diet-field">
+                <label for="dietType">Diet Type</label>
+                <select id="dietType" class="diet-select">
+                  <option value="balanced">Balanced</option>
+                  <option value="veg">Vegetarian</option>
+                  <option value="highprotein">High Protein</option>
+                </select>
+              </div>
+            </div>
+            <button id="generateDietBtn" class="diet-generate-btn click-feedback" type="button">Generate AI Meal Plan</button>
+          </div>
+        </div>
+
+        <div class="diet-result" id="dietResult">
+          <div class="diet-result-head">
+            <div>
+              <span class="section-tag">Daily Target</span>
+              <div class="diet-score" id="dietCalories">-- kcal</div>
+            </div>
+            <div class="diet-goal-pill" id="dietGoalPill">Awaiting Scan</div>
+          </div>
+          <div class="macro-grid">
+            <div class="macro-card"><strong id="proteinMacro">--g</strong><span>Protein</span></div>
+            <div class="macro-card"><strong id="carbMacro">--g</strong><span>Carbs</span></div>
+            <div class="macro-card"><strong id="fatMacro">--g</strong><span>Fats</span></div>
+          </div>
+          <div class="meal-list" id="mealList">
+            <div class="meal-item">
+              <div class="meal-time">Ready</div>
+              <div>
+                <div class="meal-name">Your AI diet plan will appear here.</div>
+                <div class="meal-info">Fill the form and tap generate to create calories, macros, breakfast, lunch, snack and dinner.</div>
+              </div>
+            </div>
+          </div>
+          <p class="diet-note">Note: This is a general fitness meal planner, not medical advice. For allergies, diabetes, kidney issues, or clinical diet needs, ask a qualified professional.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="pricing" class="reveal">
+      <div class="pricing-header">
+        <span class="section-tag">Resource Allocation</span>
+        <h2 class="section-title">TIERS OF ENGAGEMENT</h2>
+        <p class="section-sub">Pick your computational access pipeline. Unlock unrestricted real-time biomechanical analysis instantly.</p>
+      </div>
+      <div class="pricing-grid">
+        <div class="price-card">
+          <div class="plan-name2">Base Tier</div>
+          <div class="price-amt"><sup>$</sup>29<sub>/mo</sub></div>
+          <ul class="price-perks">
+            <li>Standard Workout Matrix Maps</li>
+            <li>Basic Sensor Sync Pipeline</li>
+            <li>Weekly Biometric Index Reports</li>
+          </ul>
+          <button class="btn-price btn-price-outline click-feedback">Deploy Engine</button>
+        </div>
+        <div class="price-card featured">
+          <span class="price-badge">Most Synchronized</span>
+          <div class="plan-name2">Elite Matrix</div>
+          <div class="price-amt"><sup>$</sup>59<sub>/mo</sub></div>
+          <ul class="price-perks">
+            <li>Real-time Kinetic Optimization</li>
+            <li>Unrestricted Omni AI Access</li>
+            <li>Autonomic Macrocycle Scaling</li>
+          </ul>
+          <button class="btn-price btn-price-fire click-feedback">Deploy Engine</button>
+        </div>
+        <div class="price-card">
+          <div class="plan-name2">Apex Node</div>
+          <div class="price-amt"><sup>$</sup>99<sub>/mo</sub></div>
+          <ul class="price-perks">
+            <li>1-on-1 Human Coach Integration</li>
+            <li>DNA & Biomarker Lab Analysis</li>
+            <li>Custom Smart-Wearable Hardware</li>
+          </ul>
+          <button class="btn-price btn-price-outline click-feedback">Deploy Engine</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="testimonials" class="reveal">
+      <div class="test-header">
+        <span class="section-tag">Node Verification</span>
+        <h2 class="section-title">BIOLOGICAL PROOFS</h2>
+      </div>
+      <div class="test-grid">
+        <div class="test-card">
+          <div class="stars">★★★★★</div>
+          <p class="test-text">"The live predictive overloading computation is insane. My back squat velocity metrics increased by 14% once Omni forced me to adjust my rest intervals dynamically."</p>
+          <div class="test-user">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80" alt="Sarah K." class="user-avatar">
+            <div class="user-info">
+              <div class="user-name">Sarah Jenkins</div>
+              <div class="user-title">Competitive Powerlifter</div>
+            </div>
+          </div>
+        </div>
+        <div class="test-card">
+          <div class="stars">★★★★★</div>
+          <p class="test-text">"I used to perpetually overtrain and injure my shoulders. PulseAI caught my structural instability markers mid-set and modified my volume before a tear occurred."</p>
+          <div class="test-user">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80" alt="Marcus V." class="user-avatar">
+            <div class="user-info">
+              <div class="user-name">Marcus Vance</div>
+              <div class="user-title">Hyrox Competitor</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="cta">
+      <div class="cta-inner">
+        <h2>RECONSTRUCT YOUR<br><span>PHYSIOLOGICAL MATRIX</span></h2>
+        <p>Cease running outdated, blind conditioning routines. Plug your structural system directly into the future of automated algorithmic human performance.</p>
+        <a href="#" id="ctaSyncBtn" class="btn btn-primary click-feedback">Establish Initial Sync</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo">PULSE<span>AI</span></div>
+        <p>Next-generation biomechanical automation platforms designed to push human performance past baseline genetic limits.</p>
+        <div class="footer-socials">
+          <a href="#" class="social-link">𝕏</a>
+          <a href="#" class="social-link">🛜</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h5>Protocols</h5>
+        <ul>
+          <li><a href="#services">Neural Telemetry</a></li>
+          <li><a href="#services">Metabolic Resync</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Architecture</h5>
+        <ul>
+          <li><a href="#ai">Omni AI Engine</a></li>
+          <li><a href="#diet">AI Diet Planner</a></li>
+          <li><a href="#pricing">Resource Pricing</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Corporate</h5>
+        <ul>
+          <li><a href="#">Security Kernels</a></li>
+          <li><a href="#">Telemetry Privacy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 PulseAI Systems Inc. All rights reserved.</p>
+      <p>System Status: <a href="#"><span class="pulse-dot"></span>Operational</a></p>
+    </div>
+  </footer>
+
+  <!-- SIDE PANEL -->
+  <div class="side-panel" id="appPanel">
+    <button class="panel-close" id="panelClose">← Close Core</button>
+    <h3 class="section-title" style="font-size:1.8rem; margin-bottom:10px;">CORE MATRIX CONSOLE</h3>
+    <p style="color:var(--muted); font-size:.9rem; margin-bottom:30px;">Live biological synchronization profiling infrastructure.</p>
+    
+    <div class="panel-item"><span>Omni Connection</span><span style="color:var(--neon); font-weight:700;">SYNCHRONIZED</span></div>
+    <div class="panel-item"><span>Active Protocol</span><span style="color:var(--fire); font-weight:700;">METRIC ANALYSIS</span></div>
+    
+    <div class="panel-item" style="flex-direction:column; align-items:flex-start; gap:12px; width:100%;">
+      <span style="font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; color:var(--muted);">BMI Calculation Layer</span>
+      <div style="display:flex; gap:10px; width:100%; box-sizing:border-box;">
+        <input type="number" id="bmiWeight" placeholder="Wgt (kg)" class="bmi-input">
+        <input type="number" id="bmiHeight" placeholder="Hgt (cm)" class="bmi-input">
+      </div>
+      <button id="calcBmiBtn" class="bmi-calc-btn click-feedback">Compute Metrics</button>
+      <div style="width:100%;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:0.85rem;">BMI Index: <span id="telemetryBMI" style="color:var(--volt); font-weight:700;">--</span></span>
+          <span class="bmi-category" id="bmiCategory"></span>
+        </div>
+        <div class="bmi-result-bar"><div class="bmi-result-fill" id="bmiResultFill"></div></div>
+      </div>
+    </div>
+
+    <div class="panel-item"><span>Backlog</span><span style="color:var(--muted);">0ms (Stable)</span></div>
+    <div class="panel-item"><span>Est. Output</span><span style="color:var(--volt); font-weight:700;">Static Engine</span></div>
+
+    <button class="panel-btn click-feedback" id="toastTrigger">Execute Hardware Check</button>
+  </div>
+
+  <!-- MODAL -->
+  <div class="quick-modal" id="quickModal">
+    <div class="quick-box">
+      <img src="" alt="Modal preview" id="modalImg">
+      <div class="quick-content">
+        <h2 id="modalTitle">PROTOCOL DATA</h2>
+        <p id="modalDesc">Detailed kinetic packet telemetry parameters go directly here.</p>
+        <button class="btn btn-primary click-feedback" id="modalClose" style="width:100%; border:none; padding:12px; cursor:pointer;">Acknowledge Directive</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTH MODAL -->
+  <div id="auth-modal">
+    <div class="auth-box">
+      <h2>ACCESS CORE</h2>
+      <p>Connect your biological signature to the PulseAI network.</p>
+      <div class="auth-tabs">
+        <div class="auth-indicator" id="authIndicator"></div>
+        <button class="auth-tab-btn active" data-auth="login">Login</button>
+        <button class="auth-tab-btn" data-auth="signup">Sign Up</button>
+      </div>
+      <!-- Login Form -->
+      <form class="auth-form active" id="loginForm">
+        <input type="email" class="auth-input" id="loginEmail" placeholder="Email Address" required>
+        <input type="password" class="auth-input" id="loginPassword" placeholder="Password" required>
+        <div class="auth-message" id="loginMessage"></div>
+        <button type="submit" class="auth-submit click-feedback">Initialize Session</button>
+        <div class="auth-divider">or</div>
+        <div class="auth-social-btns">
+          <button type="button" class="auth-social-btn click-feedback">🌐 Google</button>
+          <button type="button" class="auth-social-btn click-feedback"><svg class="iphone-apple-logo" viewBox="0 0 384 512" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M318.7 268.7c-.2-36.7 16.4-64.5 50.9-85.5-19.3-27.7-48.5-42.9-87.2-45.8-36.6-2.9-76.6 21.4-91.2 21.4-15.5 0-50.9-20.4-78.7-19.5-57 .9-117.4 45.5-117.4 136.5 0 26.9 4.9 54.7 14.8 83.4 13.2 37.8 60.8 130.7 110.5 129.2 26-.6 44.3-18.5 78.1-18.5 32.8 0 49.8 18.5 78.7 18.5 50.1-.7 93.2-85.1 105.7-123 7.2-20.7 10.4-41.4 10.6-61.2zM239.3 102.2C267.5 68.8 264.2 38.4 263.4 27c-24.9 1.4-53.8 16.9-70.2 35.9-18.1 20.8-28.6 46.6-26.3 75.4 27.2 2.1 52.5-11.9 72.4-36.1z"/></svg> iPhone</button>
+        </div>
+      </form>
+      <!-- Signup Form -->
+      <form class="auth-form" id="signupForm">
+        <input type="text" class="auth-input" id="signupName" placeholder="Full Name" required>
+        <input type="email" class="auth-input" id="signupEmail" placeholder="Email Address" required>
+        <input type="password" class="auth-input" id="signupPassword" placeholder="Create Password" required>
+        <input type="password" class="auth-input" id="signupConfirmPassword" placeholder="Confirm Password" required>
+        <div class="auth-message" id="signupMessage"></div>
+        <button type="submit" class="auth-submit click-feedback">Establish Identity Node</button>
+        <div class="auth-divider">or</div>
+        <div class="auth-social-btns">
+          <button type="button" class="auth-social-btn click-feedback">🌐 Google</button>
+          <button type="button" class="auth-social-btn click-feedback"><svg class="iphone-apple-logo" viewBox="0 0 384 512" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M318.7 268.7c-.2-36.7 16.4-64.5 50.9-85.5-19.3-27.7-48.5-42.9-87.2-45.8-36.6-2.9-76.6 21.4-91.2 21.4-15.5 0-50.9-20.4-78.7-19.5-57 .9-117.4 45.5-117.4 136.5 0 26.9 4.9 54.7 14.8 83.4 13.2 37.8 60.8 130.7 110.5 129.2 26-.6 44.3-18.5 78.1-18.5 32.8 0 49.8 18.5 78.7 18.5 50.1-.7 93.2-85.1 105.7-123 7.2-20.7 10.4-41.4 10.6-61.2zM239.3 102.2C267.5 68.8 264.2 38.4 263.4 27c-24.9 1.4-53.8 16.9-70.2 35.9-18.1 20.8-28.6 46.6-26.3 75.4 27.2 2.1 52.5-11.9 72.4-36.1z"/></svg> iPhone</button>
+        </div>
+      </form>
+      <button class="auth-close" id="authClose">← Dismiss</button>
+    </div>
+  </div>
+
+  <div id="profile-modal" class="quick-modal">
+    <div class="quick-box" style="max-width:520px;grid-template-columns:1fr;">
+      <div class="quick-content">
+        <h2>Your Profile</h2>
+        <p id="profileInfo">Your PulseAI profile is ready.</p>
+        <button class="panel-btn click-feedback" id="profileLogoutBtn" type="button">Logout</button>
+        <button class="auth-close" id="profileCloseBtn" type="button">← Close Profile</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="systemToast">✓ CALIBRATION SEQUENCE DISPATCHED SUCCESSFULLY</div>
+
+
+
+  <!-- FLOATING OMNI AI VOICE TRAINER -->
+  <button id="omniTrainerBtn" class="omni-float-btn click-feedback" type="button" aria-label="Open OMNI AI voice trainer">
+    <span class="omni-mic">🎙️</span>
+    <span class="omni-label">OMNI</span>
+  </button>
+
+  <div id="omniTrainerPanel" class="omni-panel" aria-live="polite">
+    <div class="omni-head">
+      <div>
+        <div class="omni-kicker">Voice Coach Online</div>
+        <div class="omni-title">OMNI TRAINER</div>
+      </div>
+      <button id="omniCloseBtn" class="omni-close" type="button" aria-label="Close OMNI trainer">×</button>
+    </div>
+    <div class="omni-body">
+      <div id="omniStatus" class="omni-status"><span class="omni-status-dot"></span><span id="omniStatusText">Ready</span></div>
+      <p id="omniOutput" class="omni-output">Tap an exercise and OMNI will explain the form, breathing, and safety cues using real browser voice speech.</p>
+      <div class="omni-exercises">
+        <button class="omni-exercise-btn click-feedback" type="button" data-exercise="pushups">Pushups</button>
+        <button class="omni-exercise-btn click-feedback" type="button" data-exercise="squats">Squats</button>
+        <button class="omni-exercise-btn click-feedback" type="button" data-exercise="deadlift">Deadlift</button>
+        <button class="omni-exercise-btn click-feedback" type="button" data-exercise="plank">Plank</button>
+        <button class="omni-exercise-btn click-feedback" type="button" data-exercise="lunges">Lunges</button>
+        <button class="omni-exercise-btn click-feedback" type="button" data-exercise="burpees">Burpees</button>
+      </div>
+      <div class="omni-controls">
+        <button id="omniMotivateBtn" class="omni-action click-feedback" type="button">Motivate Me</button>
+        <button id="omniStopBtn" class="omni-action secondary click-feedback" type="button">Stop Voice</button>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+
+    // ── LOADING SCREEN ──
+    const loader = document.getElementById('loader');
+    window.addEventListener('load', () => {
+      setTimeout(() => loader.classList.add('hidden'), 1800);
+    });
+    setTimeout(() => loader.classList.add('hidden'), 3000);
+
+    // ── SCROLL PROGRESS BAR ──
+    const progressBar = document.getElementById('scroll-progress');
+    window.addEventListener('scroll', () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      progressBar.style.width = (scrollTop / docHeight * 100) + '%';
+    }, { passive: true });
+
+    // ── STICKY ANIMATED HEADER ──
+    const nav = document.getElementById('main-nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 60);
+    }, { passive: true });
+
+    // ── BACK TO TOP ──
+    const backToTop = document.getElementById('back-to-top');
+    window.addEventListener('scroll', () => {
+      backToTop.classList.toggle('visible', window.scrollY > 400);
+    }, { passive: true });
+    backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+    // ── DARK/LIGHT THEME TOGGLE ──
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const themeLabel = document.getElementById('themeLabel');
+    let isDark = true;
+    themeToggle.addEventListener('click', () => {
+      isDark = !isDark;
+      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+      themeIcon.textContent = isDark ? '☀️' : '🌙';
+      themeLabel.textContent = isDark ? 'Light' : 'Dark';
+    });
+
+    // ── CURSOR GLOW ──
+    const glow = document.getElementById('cursor-glow');
+    document.addEventListener('mousemove', (e) => {
+      glow.style.left = e.clientX + 'px';
+      glow.style.top  = e.clientY + 'px';
+    });
+
+    // ── HERO PARALLAX MOUSE ──
+    const heroParallax = document.getElementById('heroParallax');
+    const heroSection = document.getElementById('hero');
+    heroSection.addEventListener('mousemove', (e) => {
+      const rect = heroSection.getBoundingClientRect();
+      const mx = ((e.clientX - rect.left) / rect.width * 100).toFixed(1);
+      const my = ((e.clientY - rect.top) / rect.height * 100).toFixed(1);
+      heroParallax.style.setProperty('--mx', mx + '%');
+      heroParallax.style.setProperty('--my', my + '%');
+    });
+
+    // ── SOUNDLESS CLICK RIPPLE FEEDBACK ──
+    document.addEventListener('click', (e) => {
+      const target = e.target.closest('.click-feedback, .btn, .tab-btn, .auth-tab-btn, .nav-cta, .plan-card, .service-card, .social-link, .btn-price, .panel-btn, .bmi-calc-btn, .auth-submit, .auth-social-btn');
+      if (!target) return;
+      const ripple = document.createElement('div');
+      ripple.className = 'click-ripple';
+      ripple.style.left = e.clientX + 'px';
+      ripple.style.top  = e.clientY + 'px';
+      document.body.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 500);
+    });
+
+    // ── ANIMATED COUNTERS ──
+    const counters = document.querySelectorAll('.counter');
+    let countersStarted = false;
+    const startCounters = () => {
+      if (countersStarted) return;
+      const statsBar = document.querySelector('.stats-bar');
+      if (!statsBar) return;
+      const rect = statsBar.getBoundingClientRect();
+      if (rect.top < window.innerHeight * 0.95) {
+        countersStarted = true;
+        counters.forEach(el => {
+          const target = parseFloat(el.dataset.target);
+          const suffix = el.dataset.suffix || '';
+          const decimal = parseInt(el.dataset.decimal) || 0;
+          const duration = 1800;
+          const start = performance.now();
+          const step = (now) => {
+            const elapsed = now - start;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const value = (target * eased).toFixed(decimal);
+            el.textContent = value + suffix;
+            if (progress < 1) requestAnimationFrame(step);
+          };
+          requestAnimationFrame(step);
+        });
+      }
+    };
+    window.addEventListener('scroll', startCounters, { passive: true });
+    startCounters();
+
+    // ── ANIMATED TAB INDICATOR (Workouts) ──
+    const tabsContainer = document.getElementById('tabsContainer');
+    const tabIndicator  = document.getElementById('tabIndicator');
+
+    function moveTabIndicator(btn) {
+      tabIndicator.style.left  = btn.offsetLeft + 'px';
+      tabIndicator.style.width = btn.offsetWidth + 'px';
+    }
+
+    const activeTabBtn = tabsContainer.querySelector('.tab-btn.active');
+    if (activeTabBtn) {
+      requestAnimationFrame(() => moveTabIndicator(activeTabBtn));
+    }
+
+    // ── AUTH MODAL ANIMATED TAB ──
+    const authModal     = document.getElementById('auth-modal');
+    const authClose     = document.getElementById('authClose');
+    const authIndicator = document.getElementById('authIndicator');
+    const authTabBtns   = document.querySelectorAll('.auth-tab-btn');
+    const loginForm     = document.getElementById('loginForm');
+    const signupForm    = document.getElementById('signupForm');
+    const openAuthModal = document.getElementById('openAuthModal');
+    const profileModal = document.getElementById('profile-modal');
+    const profileInfo = document.getElementById('profileInfo');
+    const profileCloseBtn = document.getElementById('profileCloseBtn');
+    const profileLogoutBtn = document.getElementById('profileLogoutBtn');
+
+    function getCurrentUser() {
+      try {
+        return JSON.parse(localStorage.getItem('pulseai_current_user'));
+      } catch (err) {
+        return null;
+      }
+    }
+
+    function updateAuthNavButton() {
+      const currentUser = getCurrentUser();
+      if (!openAuthModal) return;
+      if (currentUser && currentUser.email) {
+        openAuthModal.textContent = 'Your Profile';
+        openAuthModal.dataset.mode = 'profile';
+        openAuthModal.setAttribute('title', currentUser.name ? `Logged in as ${currentUser.name}` : 'Your PulseAI profile');
+      } else {
+        openAuthModal.textContent = 'Join Now';
+        openAuthModal.dataset.mode = 'auth';
+        openAuthModal.setAttribute('title', 'Join PulseAI');
+      }
+    }
+
+    function openProfileModal() {
+      const currentUser = getCurrentUser();
+      if (!currentUser) {
+        updateAuthNavButton();
+        authModal.classList.add('active');
+        return;
+      }
+      if (profileInfo) {
+        profileInfo.innerHTML = `Name: <strong>${currentUser.name || 'PulseAI User'}</strong><br>Email: <strong>${currentUser.email}</strong><br>Status: <strong>Registered Member</strong>`;
+      }
+      profileModal.classList.add('active');
+    }
+
+    updateAuthNavButton();
+
+    function moveAuthIndicator(btn) {
+      authIndicator.style.left  = btn.offsetLeft + 'px';
+      authIndicator.style.width = btn.offsetWidth + 'px';
+    }
+
+    authTabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        authTabBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        moveAuthIndicator(btn);
+        const type = btn.dataset.auth;
+        loginForm.classList.toggle('active', type === 'login');
+        signupForm.classList.toggle('active', type === 'signup');
+      });
+    });
+
+    openAuthModal.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (openAuthModal.dataset.mode === 'profile') {
+        openProfileModal();
+        return;
+      }
+      authModal.classList.add('active');
+      requestAnimationFrame(() => {
+        const activeAuth = document.querySelector('.auth-tab-btn.active');
+        if (activeAuth) moveAuthIndicator(activeAuth);
+      });
+    });
+
+    authClose.addEventListener('click', () => authModal.classList.remove('active'));
+    authModal.addEventListener('click', (e) => { if (e.target === authModal) authModal.classList.remove('active'); });
+    if (profileCloseBtn) profileCloseBtn.addEventListener('click', () => profileModal.classList.remove('active'));
+    if (profileModal) profileModal.addEventListener('click', (e) => { if (e.target === profileModal) profileModal.classList.remove('active'); });
+    if (profileLogoutBtn) profileLogoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('pulseai_current_user');
+      profileModal.classList.remove('active');
+      updateAuthNavButton();
+      showToast('✓ LOGGED OUT');
+    });
+
+    // ── REAL LOCAL SIGNUP + LOGIN CHECK ──
+    const AUTH_USERS_KEY = 'pulseai_registered_users';
+    const loginEmail = document.getElementById('loginEmail');
+    const loginPassword = document.getElementById('loginPassword');
+    const signupName = document.getElementById('signupName');
+    const signupEmail = document.getElementById('signupEmail');
+    const signupPassword = document.getElementById('signupPassword');
+    const signupConfirmPassword = document.getElementById('signupConfirmPassword');
+    const loginMessage = document.getElementById('loginMessage');
+    const signupMessage = document.getElementById('signupMessage');
+
+    function getRegisteredUsers() {
+      try {
+        return JSON.parse(localStorage.getItem(AUTH_USERS_KEY)) || [];
+      } catch (err) {
+        return [];
+      }
+    }
+
+    function saveRegisteredUsers(users) {
+      localStorage.setItem(AUTH_USERS_KEY, JSON.stringify(users));
+    }
+
+    function setAuthMessage(el, message, type = 'error') {
+      el.textContent = message;
+      el.className = `auth-message show ${type}`;
+    }
+
+    function clearAuthMessages() {
+      loginMessage.className = 'auth-message';
+      loginMessage.textContent = '';
+      signupMessage.className = 'auth-message';
+      signupMessage.textContent = '';
+    }
+
+    authTabBtns.forEach(btn => btn.addEventListener('click', clearAuthMessages));
+
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = loginEmail.value.trim().toLowerCase();
+      const password = loginPassword.value;
+      const users = getRegisteredUsers();
+      const foundUser = users.find(user => user.email === email);
+
+      if (!foundUser) {
+        setAuthMessage(loginMessage, 'User not found. Please sign up first.', 'error');
+        showToast('⚠ USER NOT FOUND — SIGN UP FIRST');
+        return;
+      }
+
+      if (foundUser.password !== password) {
+        setAuthMessage(loginMessage, 'Wrong password. Try again.', 'error');
+        showToast('⚠ WRONG PASSWORD');
+        return;
+      }
+
+      localStorage.setItem('pulseai_current_user', JSON.stringify({ name: foundUser.name, email: foundUser.email }));
+      setAuthMessage(loginMessage, `Welcome back, ${foundUser.name}!`, 'success');
+      showToast('✓ SESSION INITIALIZED — WELCOME BACK');
+      updateAuthNavButton();
+      setTimeout(() => authModal.classList.remove('active'), 650);
+    });
+
+    signupForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = signupName.value.trim();
+      const email = signupEmail.value.trim().toLowerCase();
+      const password = signupPassword.value;
+      const confirmPassword = signupConfirmPassword.value;
+      const users = getRegisteredUsers();
+
+      if (password.length < 4) {
+        setAuthMessage(signupMessage, 'Password must be at least 4 characters.', 'error');
+        showToast('⚠ PASSWORD TOO SHORT');
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        setAuthMessage(signupMessage, 'Passwords do not match.', 'error');
+        showToast('⚠ PASSWORDS DO NOT MATCH');
+        return;
+      }
+
+      if (users.some(user => user.email === email)) {
+        setAuthMessage(signupMessage, 'This email is already signed up. Please login.', 'error');
+        showToast('⚠ EMAIL ALREADY REGISTERED');
+        return;
+      }
+
+      users.push({ name, email, password, createdAt: new Date().toISOString() });
+      saveRegisteredUsers(users);
+      localStorage.setItem('pulseai_current_user', JSON.stringify({ name, email }));
+      setAuthMessage(signupMessage, 'Signup successful. Now you can login anytime.', 'success');
+      showToast('✓ IDENTITY NODE ESTABLISHED');
+      updateAuthNavButton();
+      setTimeout(() => authModal.classList.remove('active'), 750);
+      signupForm.reset();
+    });
+
+    // ── WORKOUT DATA & RENDERING ──
+    const baseWorkoutDataset = [
+      { id:1, name:"Kinetic Velocity Plan",    type:"strength",  level:"Advanced",     duration:"60 Min", img:"https://images.unsplash.com/photo-1517963879433-6ad2b056d712?w=500&q=80", desc:"Accelerated force development routines focusing on CNS efficiency and explosive movements." },
+      { id:2, name:"Aerobic Threshold Matrix", type:"endurance", level:"Intermediate", duration:"45 Min", img:"https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=500&q=80", desc:"Sustained cardiac indexing layouts crafted to shift lactic acid clearance limits up by substantial margins." },
+      { id:3, name:"Myofascial Resync",        type:"recovery",  level:"Beginner",     duration:"30 Min", img:"https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&q=80", desc:"Deep tissue restoration protocols utilizing compression mapping and fascial decompression layers." },
+      { id:4, name:"Neural Override Complex",  type:"strength",  level:"Advanced",     duration:"75 Min", img:"https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=500&q=80", desc:"Maximum motor unit recruitment sessions targeting peak force outputs via velocity-based training." },
+    ];
+
+    let currentWorkoutDataset = [...baseWorkoutDataset];
+
+    const ageBasedWorkoutPlans = {
+      teen: [
+        { id:101, name:'Teen Starter Strength', type:'strength', level:'Beginner', duration:'30 Min', img:'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&q=80', desc:'Safe bodyweight basics: pushups, squats, planks, mobility and light athletic drills for growing bodies.' },
+        { id:102, name:'Sports Agility Builder', type:'endurance', level:'Beginner', duration:'25 Min', img:'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=500&q=80', desc:'Low-risk stamina, footwork and coordination circuits to improve sports performance without heavy loading.' },
+        { id:103, name:'Flex & Posture Reset', type:'recovery', level:'Beginner', duration:'20 Min', img:'https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?w=500&q=80', desc:'Stretching, posture work and core control to support clean movement and recovery.' }
+      ],
+      young: [
+        { id:201, name:'Beast Mode Muscle Gain', type:'strength', level:'Intermediate', duration:'60 Min', img:'https://images.unsplash.com/photo-1517963879433-6ad2b056d712?w=500&q=80', desc:'Progressive overload split for muscle growth, strength and powerful compound movements.' },
+        { id:202, name:'HIIT Shred Protocol', type:'endurance', level:'Intermediate', duration:'35 Min', img:'https://images.unsplash.com/photo-1434682881908-b43d0467b798?w=500&q=80', desc:'High-energy conditioning rounds built for fat burn, stamina and athletic intensity.' },
+        { id:203, name:'Recovery Armor', type:'recovery', level:'All Levels', duration:'25 Min', img:'https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?w=500&q=80', desc:'Mobility, breath control and cooldown flow to keep joints fresh after hard sessions.' }
+      ],
+      adult: [
+        { id:301, name:'Functional Fat Loss', type:'strength', level:'Intermediate', duration:'45 Min', img:'https://images.unsplash.com/photo-1534258936925-c58bed479fcb?w=500&q=80', desc:'Joint-smart strength circuits focused on lean muscle, calorie burn and everyday movement quality.' },
+        { id:302, name:'Cardio Engine Builder', type:'endurance', level:'Intermediate', duration:'40 Min', img:'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=500&q=80', desc:'Balanced endurance sessions to improve heart health, stamina and metabolic conditioning.' },
+        { id:303, name:'Mobility Reboot', type:'recovery', level:'All Levels', duration:'25 Min', img:'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&q=80', desc:'Hips, spine, shoulders and core stability work for better form and less stiffness.' }
+      ],
+      senior: [
+        { id:401, name:'Joint Friendly Strength', type:'strength', level:'Beginner', duration:'30 Min', img:'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=500&q=80', desc:'Controlled low-impact strength moves using bodyweight and light resistance to protect joints.' },
+        { id:402, name:'Heart Health Walk Plan', type:'endurance', level:'Beginner', duration:'30 Min', img:'https://images.unsplash.com/photo-1496483648148-47c686dc86a8?w=500&q=80', desc:'Gentle cardio intervals, walking structure and breathing rhythm for sustainable fitness.' },
+        { id:403, name:'Balance & Mobility Flow', type:'recovery', level:'Beginner', duration:'20 Min', img:'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=500&q=80', desc:'Balance drills, stretching and mobility work to support confidence, flexibility and daily movement.' }
+      ]
+    };
+
+    const plansGrid = document.getElementById('plansGrid');
+
+    const pillMap = { strength:'pill-fire', endurance:'pill-neon', recovery:'pill-volt' };
+
+    function renderWorkouts(filter = 'all') {
+      const filtered = filter === 'all' ? currentWorkoutDataset : currentWorkoutDataset.filter(w => w.type === filter);
+      plansGrid.innerHTML = filtered.map(w => `
+        <div class="plan-card" data-id="${w.id}">
+          <img src="${w.img}" alt="${w.name}" class="plan-img">
+          <div class="plan-body">
+            <div class="plan-meta">
+              <span class="pill ${pillMap[w.type] || 'pill-neon'}">${w.type}</span>
+              <span class="pill pill-purple">${w.level}</span>
+              <span class="pill pill-volt">${w.duration}</span>
+            </div>
+            <div class="plan-name">${w.name}</div>
+            <p class="plan-desc">${w.desc}</p>
+          </div>
+        </div>
+      `).join('');
+      setupModalListeners();
+    }
+
+
+
+    // ── AGE + BODY TYPE FIRST WORKOUT EXPERIENCE ──
+    const ageGateModal = document.getElementById('ageGateModal');
+    const userAgeInput = document.getElementById('userAgeInput');
+    const startAgePlanBtn = document.getElementById('startAgePlanBtn');
+    const ageStep = document.getElementById('ageStep');
+    const bodyTypeStep = document.getElementById('bodyTypeStep');
+    const bodyTypeCards = document.querySelectorAll('.body-type-card');
+    const backToAgeBtn = document.getElementById('backToAgeBtn');
+    const finishBodyPlanBtn = document.getElementById('finishBodyPlanBtn');
+    const ageGateCopy = document.getElementById('ageGateCopy');
+    const agePlanBanner = document.getElementById('agePlanBanner');
+    const agePlanText = document.getElementById('agePlanText');
+    const changeAgeBtn = document.getElementById('changeAgeBtn');
+    const plansTitle = document.querySelector('#plans .section-title');
+    const plansSub = document.querySelector('#plans .section-sub');
+
+    let selectedAge = null;
+    let selectedBodyType = '';
+
+    const bodyTypeInfo = {
+      lean: {
+        label: 'Lean Muscle Gain',
+        focus: 'progressive strength, compound basics, controlled volume and muscle-building consistency',
+        modifier: 'Extra focus: eat enough protein, train 3–5 days weekly and avoid excessive cardio.'
+      },
+      average: {
+        label: 'Balanced Fitness',
+        focus: 'strength, cardio balance, athletic conditioning and full-body performance',
+        modifier: 'Extra focus: balanced split with strength days, endurance days and mobility recovery.'
+      },
+      overweight: {
+        label: 'Fat Loss Mode',
+        focus: 'low-impact calorie burn, joint-safe strength, core stability and steady cardio',
+        modifier: 'Extra focus: start low-impact, build consistency and keep intensity safe but progressive.'
+      },
+      muscular: {
+        label: 'Advanced Power Mode',
+        focus: 'hypertrophy, power, mobility, recovery and performance refinement',
+        modifier: 'Extra focus: heavier progressive training with enough recovery and mobility work.'
+      }
+    };
+
+    const bodySpecificPlanNames = {
+      lean: ['Lean Bulk Strength', 'Muscle Builder Circuit', 'Recovery Growth Flow'],
+      average: ['Balanced Strength Engine', 'Athletic Cardio Matrix', 'Mobility Performance Reset'],
+      overweight: ['Fat Loss Strength Start', 'Low Impact Burn Plan', 'Core & Mobility Reset'],
+      muscular: ['Power Hypertrophy Split', 'Athletic Conditioning Blast', 'Deep Recovery Armor']
+    };
+
+    function getAgeGroup(age) {
+      if (age >= 10 && age <= 17) return { key: 'teen', label: 'Teen Safe Mode', focus: 'Bodyweight, posture, agility and safe beginner strength' };
+      if (age >= 18 && age <= 30) return { key: 'young', label: 'Beast Mode', focus: 'Muscle gain, strength and HIIT conditioning' };
+      if (age >= 31 && age <= 45) return { key: 'adult', label: 'Elite Functional Mode', focus: 'Fat loss, functional strength and cardio balance' };
+      return { key: 'senior', label: 'Longevity Mode', focus: 'Joint-friendly strength, walking cardio, balance and mobility' };
+    }
+
+    function buildAgeBodyWorkoutDataset(age, bodyType) {
+      const group = getAgeGroup(age);
+      const body = bodyTypeInfo[bodyType] || bodyTypeInfo.average;
+      const base = ageBasedWorkoutPlans[group.key] || baseWorkoutDataset;
+      const names = bodySpecificPlanNames[bodyType] || bodySpecificPlanNames.average;
+
+      return base.map((workout, index) => ({
+        ...workout,
+        id: Number(`${workout.id}${index + 1}`),
+        name: names[index] || `${body.label} ${workout.name}`,
+        desc: `${workout.desc} Body type focus: ${body.focus}. ${body.modifier}`
+      }));
+    }
+
+    function showBodyTypeStep() {
+      ageStep.style.display = 'none';
+      bodyTypeStep.classList.add('active');
+      if (ageGateCopy) ageGateCopy.textContent = `Step 2: Age ${selectedAge} is set. Now choose your body type.`;
+    }
+
+    function showAgeStep() {
+      ageStep.style.display = 'block';
+      bodyTypeStep.classList.remove('active');
+      if (ageGateCopy) ageGateCopy.textContent = 'Step 1: Enter your age. PulseAI will identify your age group, then personalize your workout plan based on your body type before opening the main page.';
+      setTimeout(() => userAgeInput.focus(), 80);
+    }
+
+    function activateAgeBodyPlan(age, bodyType) {
+      const group = getAgeGroup(age);
+      const body = bodyTypeInfo[bodyType] || bodyTypeInfo.average;
+      currentWorkoutDataset = buildAgeBodyWorkoutDataset(age, bodyType);
+
+      if (plansTitle) plansTitle.textContent = `${group.label.toUpperCase()} — ${body.label.toUpperCase()}`;
+      if (plansSub) plansSub.textContent = `${group.focus}. Body type focus: ${body.focus}. OMNI can guide form with voice coaching.`;
+
+      if (agePlanBanner && agePlanText) {
+        agePlanText.innerHTML = `<strong>${group.label}</strong> for age ${age} + <strong>${body.label}</strong>. ${body.modifier}`;
+        agePlanBanner.classList.add('active');
+      }
+
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      const allTab = document.querySelector('.tab-btn[data-filter="all"]');
+      if (allTab) {
+        allTab.classList.add('active');
+        moveTabIndicator(allTab);
+      }
+
+      renderWorkouts('all');
+      ageGateModal.classList.remove('active');
+      document.body.style.overflow = 'auto';
+      document.getElementById('hero')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (typeof showToast === 'function') showToast(`✓ PROFILE SET: ${group.label.toUpperCase()} + ${body.label.toUpperCase()}`);
+    }
+
+    function handleAgeSubmit() {
+      const age = Number(userAgeInput.value);
+      if (!Number.isInteger(age) || age < 10 || age > 100) {
+        userAgeInput.classList.add('error');
+        setTimeout(() => userAgeInput.classList.remove('error'), 500);
+        if (typeof showToast === 'function') showToast('⚠ Enter a valid age between 10 and 100');
+        return;
+      }
+      selectedAge = age;
+      showBodyTypeStep();
+    }
+
+    startAgePlanBtn.addEventListener('click', handleAgeSubmit);
+    userAgeInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleAgeSubmit();
+    });
+
+    bodyTypeCards.forEach(card => {
+      card.addEventListener('click', () => {
+        bodyTypeCards.forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        selectedBodyType = card.dataset.body;
+      });
+    });
+
+    backToAgeBtn.addEventListener('click', showAgeStep);
+    finishBodyPlanBtn.addEventListener('click', () => {
+      if (!selectedBodyType) {
+        if (typeof showToast === 'function') showToast('⚠ Select your body type first');
+        return;
+      }
+      activateAgeBodyPlan(selectedAge, selectedBodyType);
+    });
+
+    changeAgeBtn.addEventListener('click', () => {
+      selectedAge = null;
+      selectedBodyType = '';
+      bodyTypeCards.forEach(c => c.classList.remove('selected'));
+      ageGateModal.classList.add('active');
+      showAgeStep();
+    });
+
+    window.addEventListener('load', () => {
+      ageGateModal.classList.add('active');
+      showAgeStep();
+      setTimeout(() => userAgeInput.focus(), 650);
+    });
+
+
+    // ── TAB FILTER ──
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        moveTabIndicator(btn);
+        const text = btn.textContent.toLowerCase();
+        const filter = text === 'all' ? 'all' :
+                       text.includes('strength') ? 'strength' :
+                       text.includes('endurance') ? 'endurance' : 'recovery';
+        renderWorkouts(filter);
+      });
+    });
+
+    // ── MODAL ──
+    const modal       = document.getElementById('quickModal');
+    const modalImg    = document.getElementById('modalImg');
+    const modalTitle  = document.getElementById('modalTitle');
+    const modalDesc   = document.getElementById('modalDesc');
+    const modalClose  = document.getElementById('modalClose');
+
+    function setupModalListeners() {
+      document.querySelectorAll('.service-card, .plan-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+          e.preventDefault();
+          const imgEl  = card.querySelector('img');
+          const titleEl = card.querySelector('.card-title, .plan-name');
+          const descEl  = card.querySelector('.card-desc, .plan-desc');
+          const dataImg = card.dataset.img;
+          if (imgEl && titleEl && descEl) {
+            modalImg.src = dataImg || imgEl.src;
+            modalTitle.textContent = titleEl.textContent.toUpperCase();
+            modalDesc.textContent  = descEl.textContent;
+            modal.classList.add('active');
+          }
+        });
+      });
+    }
+
+    modalClose.addEventListener('click', () => modal.classList.remove('active'));
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('active'); });
+
+    // ── SIDE PANEL ──
+    const sidePanel      = document.getElementById('appPanel');
+    const panelClose     = document.getElementById('panelClose');
+    const panelOverlay   = document.getElementById('panelOverlay');
+    const ctaSyncBtn     = document.getElementById('ctaSyncBtn');
+
+    function openPanel() { sidePanel.classList.add('active'); panelOverlay.classList.add('active'); }
+    function closePanel() { sidePanel.classList.remove('active'); panelOverlay.classList.remove('active'); }
+
+    // Open panel via CTA section button
+    if (ctaSyncBtn) {
+      ctaSyncBtn.addEventListener('click', (e) => { e.preventDefault(); openPanel(); });
+    }
+
+    panelClose.addEventListener('click', closePanel);
+    panelOverlay.addEventListener('click', closePanel);
+
+    // ── BMI MICRO-INTERACTIONS ──
+    const bmiWeight     = document.getElementById('bmiWeight');
+    const bmiHeight     = document.getElementById('bmiHeight');
+    const calcBmiBtn    = document.getElementById('calcBmiBtn');
+    const bmiDisplay    = document.getElementById('telemetryBMI');
+    const bmiResultFill = document.getElementById('bmiResultFill');
+    const bmiCategory   = document.getElementById('bmiCategory');
+
+    function getBMICategory(bmi) {
+      if (bmi < 18.5) return { label: 'Underweight', color: '#4db8ff' };
+      if (bmi < 25)   return { label: 'Optimal',     color: 'var(--neon)' };
+      if (bmi < 30)   return { label: 'Overweight',  color: 'var(--ember)' };
+      return              { label: 'Obese',          color: 'var(--fire)' };
+    }
+
+    calcBmiBtn.addEventListener('click', () => {
+      const weight = parseFloat(bmiWeight.value);
+      const heightCm = parseFloat(bmiHeight.value);
+
+      bmiWeight.classList.remove('error');
+      bmiHeight.classList.remove('error');
+
+      if (!weight || weight <= 0) {
+        bmiWeight.classList.add('error');
+        bmiWeight.focus();
+        return;
+      }
+      if (!heightCm || heightCm <= 0) {
+        bmiHeight.classList.add('error');
+        bmiHeight.focus();
+        return;
+      }
+
+      const bmi = weight / Math.pow(heightCm / 100, 2);
+      const cat = getBMICategory(bmi);
+
+      bmiDisplay.textContent = bmi.toFixed(1);
+      bmiDisplay.style.color = cat.color;
+      bmiCategory.textContent = cat.label;
+      bmiCategory.style.color = cat.color;
+
+      // Animate bar (BMI 10–40 range mapped to 0–100%)
+      const pct = Math.min(Math.max((bmi - 10) / 30 * 100, 5), 100);
+      bmiResultFill.style.background = cat.color;
+      setTimeout(() => { bmiResultFill.style.width = pct + '%'; }, 50);
+    });
+
+    // ── TOAST ──
+    const systemToast = document.getElementById('systemToast');
+
+    function showToast(msg) {
+      systemToast.textContent = msg;
+      systemToast.classList.add('show');
+      setTimeout(() => systemToast.classList.remove('show'), 4000);
+    }
+
+    const toastTrigger = document.getElementById('toastTrigger');
+    toastTrigger.addEventListener('click', async () => {
+      toastTrigger.disabled = true;
+      toastTrigger.textContent = 'Querying Peripheral Data Stream Nodes...';
+      toastTrigger.style.opacity = '0.5';
+      await new Promise(r => setTimeout(r, 2000));
+      toastTrigger.disabled = false;
+      toastTrigger.textContent = 'Execute Hardware Check';
+      toastTrigger.style.opacity = '1';
+      showToast('✓ MESH ARRAY CHANNELS STATUS: SECURE & STABLE');
+    });
+
+    // ── SCROLL REVEAL ──
+    const reveals = document.querySelectorAll('.reveal');
+    reveals.forEach(r => { r.style.opacity = '0'; r.style.animation = 'none'; });
+
+    const revealOnScroll = () => {
+      reveals.forEach(el => {
+        if (el.getBoundingClientRect().top < window.innerHeight * 0.82) {
+          el.style.opacity = '1';
+          el.style.animation = 'revealUp 0.7s ease both';
+        }
+      });
+    };
+    window.addEventListener('scroll', revealOnScroll, { passive: true });
+    revealOnScroll();
+
+
+
+
+    // ── AI DIET PLANNER ──
+    const dietAge = document.getElementById('dietAge');
+    const dietGender = document.getElementById('dietGender');
+    const dietWeight = document.getElementById('dietWeight');
+    const dietHeight = document.getElementById('dietHeight');
+    const dietGoal = document.getElementById('dietGoal');
+    const dietType = document.getElementById('dietType');
+    const generateDietBtn = document.getElementById('generateDietBtn');
+    const dietCalories = document.getElementById('dietCalories');
+    const dietGoalPill = document.getElementById('dietGoalPill');
+    const proteinMacro = document.getElementById('proteinMacro');
+    const carbMacro = document.getElementById('carbMacro');
+    const fatMacro = document.getElementById('fatMacro');
+    const mealList = document.getElementById('mealList');
+
+    const mealTemplates = {
+      balanced: {
+        fatloss: [
+          ['Breakfast', 'Oats + Greek yogurt + berries', 'High-fibre start with steady energy and protein.'],
+          ['Lunch', 'Grilled chicken/Paneer bowl + rice + salad', 'Lean protein with controlled carbs and micronutrients.'],
+          ['Snack', 'Fruit + roasted chana or eggs', 'Light protein snack to control cravings.'],
+          ['Dinner', 'Dal/Chicken soup + vegetables + 1 roti', 'Low-calorie dinner focused on recovery.']
+        ],
+        maintain: [
+          ['Breakfast', 'Eggs/Paneer bhurji + toast + fruit', 'Balanced protein, carbs and fats for daily performance.'],
+          ['Lunch', 'Rice/roti + dal + curd + vegetables', 'Classic balanced plate for energy and digestion.'],
+          ['Snack', 'Peanut butter toast or smoothie', 'Moderate calories to keep training fuel stable.'],
+          ['Dinner', 'Chicken/Paneer + potatoes + salad', 'Protein-rich recovery meal with clean carbs.']
+        ],
+        musclegain: [
+          ['Breakfast', 'Oats + banana + milk + peanut butter', 'Calorie-dense breakfast for muscle gain.'],
+          ['Lunch', 'Chicken/Paneer rice bowl + curd', 'Protein and carbs to support progressive overload.'],
+          ['Snack', 'Protein shake + nuts + fruit', 'Easy surplus calories with fast protein.'],
+          ['Dinner', 'Dal + paneer/chicken + 2 rotis + veggies', 'High-protein dinner for overnight recovery.']
+        ]
+      },
+      veg: {
+        fatloss: [
+          ['Breakfast', 'Besan chilla + curd', 'Vegetarian protein with lower calories.'],
+          ['Lunch', 'Dal + salad + 1-2 rotis', 'Fibre-heavy meal to stay full.'],
+          ['Snack', 'Sprouts chaat + lemon', 'Crunchy protein snack with micronutrients.'],
+          ['Dinner', 'Paneer/tofu stir fry + vegetables', 'Light dinner with strong protein base.']
+        ],
+        maintain: [
+          ['Breakfast', 'Poha/upma + curd + fruit', 'Balanced vegetarian fuel.'],
+          ['Lunch', 'Rajma/chole + rice + salad', 'Carb and protein mix for training days.'],
+          ['Snack', 'Lassi/smoothie + nuts', 'Moderate calories and recovery nutrients.'],
+          ['Dinner', 'Dal + paneer + roti + vegetables', 'Complete vegetarian recovery plate.']
+        ],
+        musclegain: [
+          ['Breakfast', 'Paneer sandwich + banana shake', 'High-calorie vegetarian muscle fuel.'],
+          ['Lunch', 'Rajma rice + curd + ghee', 'Calorie surplus with protein and carbs.'],
+          ['Snack', 'Peanut chikki + milk + fruit', 'Easy extra calories.'],
+          ['Dinner', 'Tofu/paneer curry + 2-3 rotis', 'Protein-heavy dinner for growth.']
+        ]
+      },
+      highprotein: {
+        fatloss: [
+          ['Breakfast', 'Egg whites/Paneer + black coffee', 'Very high protein with low calories.'],
+          ['Lunch', 'Chicken/tofu salad bowl', 'Lean protein plus fibre.'],
+          ['Snack', 'Whey/curd + fruit', 'Protein hit without heavy calories.'],
+          ['Dinner', 'Fish/chicken/paneer + vegetables', 'Low-carb recovery meal.']
+        ],
+        maintain: [
+          ['Breakfast', 'Protein oats + nuts', 'Strong protein and steady carbs.'],
+          ['Lunch', 'Chicken/paneer wrap + salad', 'Portable balanced high-protein meal.'],
+          ['Snack', 'Boiled eggs/tofu bites', 'Simple protein top-up.'],
+          ['Dinner', 'Lean protein + rice + veggies', 'Training recovery with controlled calories.']
+        ],
+        musclegain: [
+          ['Breakfast', 'Whey oats + banana + peanut butter', 'Protein and surplus calories.'],
+          ['Lunch', 'Double protein rice bowl', 'Heavy lunch for muscle gain.'],
+          ['Snack', 'Shake + nuts + sandwich', 'Extra calories between meals.'],
+          ['Dinner', 'Chicken/paneer + dal + rotis', 'Big recovery meal with complete macros.']
+        ]
+      }
+    };
+
+    function validateDietInput(input, min, max) {
+      const value = Number(input.value);
+      const valid = value >= min && value <= max;
+      input.classList.toggle('error', !valid);
+      return valid ? value : null;
+    }
+
+    function generateDietPlan() {
+      const age = validateDietInput(dietAge, 10, 100);
+      const weight = validateDietInput(dietWeight, 25, 250);
+      const height = validateDietInput(dietHeight, 100, 230);
+      if (!age || !weight || !height) {
+        showToast('⚠ Fill valid age, weight and height for diet scan');
+        return;
+      }
+
+      const isMale = dietGender.value === 'male';
+      let bmr = (10 * weight) + (6.25 * height) - (5 * age) + (isMale ? 5 : -161);
+      let calories = Math.round(bmr * 1.45);
+      const goal = dietGoal.value;
+      if (goal === 'fatloss') calories -= 420;
+      if (goal === 'musclegain') calories += 330;
+      calories = Math.max(calories, isMale ? 1500 : 1300);
+
+      const protein = Math.round(weight * (goal === 'musclegain' ? 2.0 : goal === 'fatloss' ? 1.8 : 1.6));
+      const fats = Math.round((calories * 0.25) / 9);
+      const carbs = Math.max(80, Math.round((calories - (protein * 4) - (fats * 9)) / 4));
+      const goalLabel = goal === 'fatloss' ? 'Fat Loss Mode' : goal === 'musclegain' ? 'Muscle Gain Mode' : 'Maintenance Mode';
+
+      dietCalories.textContent = `${calories} kcal`;
+      dietGoalPill.textContent = goalLabel;
+      proteinMacro.textContent = `${protein}g`;
+      carbMacro.textContent = `${carbs}g`;
+      fatMacro.textContent = `${fats}g`;
+
+      const selectedMeals = mealTemplates[dietType.value][goal];
+      mealList.innerHTML = selectedMeals.map(([time, name, info]) => `
+        <div class="meal-item">
+          <div class="meal-time">${time}</div>
+          <div>
+            <div class="meal-name">${name}</div>
+            <div class="meal-info">${info}</div>
+          </div>
+        </div>
+      `).join('');
+
+      showToast(`✓ AI DIET PLAN GENERATED: ${calories} KCAL`);
+    }
+
+    generateDietBtn.addEventListener('click', generateDietPlan);
+    [dietAge, dietWeight, dietHeight].forEach(input => input.addEventListener('keydown', e => { if (e.key === 'Enter') generateDietPlan(); }));
+
+
+    // ── PAYMENT SYSTEM ──
+    const paymentButtons = document.querySelectorAll('.btn-price');
+    const paymentModal = document.getElementById('paymentModal');
+    const closePaymentModal = document.getElementById('closePaymentModal');
+    const selectedPlan = document.getElementById('selectedPlan');
+    const selectedPrice = document.getElementById('selectedPrice');
+    const payNowBtn = document.getElementById('payNowBtn');
+
+    paymentButtons.forEach((btn, index) => {
+      btn.addEventListener('click', () => {
+        const card = btn.closest('.price-card');
+        const plan = card.querySelector('.plan-name2')?.innerText || 'PulseAI Plan';
+        const price = card.querySelector('.price-amt')?.innerText.replace(/\s+/g, '') || '$0/mo';
+
+        selectedPlan.textContent = plan;
+        selectedPrice.textContent = price;
+
+        paymentModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      });
+    });
+
+    closePaymentModal.addEventListener('click', () => {
+      paymentModal.style.display = 'none';
+      document.body.style.overflow = 'auto';
+    });
+
+    paymentModal.addEventListener('click', (e) => {
+      if (e.target === paymentModal) {
+        paymentModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+      }
+    });
+
+    payNowBtn.addEventListener('click', () => {
+      const name = document.getElementById('cardName').value.trim();
+      const number = document.getElementById('cardNumber').value.trim();
+      const expiry = document.getElementById('expiry').value.trim();
+      const cvv = document.getElementById('cvv').value.trim();
+
+      if (!name || !number || !expiry || !cvv) {
+        alert('Please fill all payment details.');
+        return;
+      }
+
+      payNowBtn.textContent = 'Processing Payment...';
+      payNowBtn.disabled = true;
+
+      setTimeout(() => {
+        payNowBtn.textContent = 'Payment Successful ✓';
+        payNowBtn.style.background = 'linear-gradient(135deg,#00FFD1,#00b894)';
+
+        setTimeout(() => {
+          paymentModal.style.display = 'none';
+          document.body.style.overflow = 'auto';
+
+          payNowBtn.textContent = 'Pay Now';
+          payNowBtn.disabled = false;
+          payNowBtn.style.background = 'linear-gradient(135deg,#FF4500,#7B2FFF)';
+
+          document.getElementById('cardName').value = '';
+          document.getElementById('cardNumber').value = '';
+          document.getElementById('expiry').value = '';
+          document.getElementById('cvv').value = '';
+
+          if (typeof showToast === 'function') {
+            showToast('✓ PAYMENT CONFIRMED — MEMBERSHIP ACTIVATED');
+          }
+        }, 1800);
+      }, 2000);
+    });
+
+
+
+
+    // ── OMNI AI VOICE TRAINER ──
+    const omniBtn = document.getElementById('omniTrainerBtn');
+    const omniPanel = document.getElementById('omniTrainerPanel');
+    const omniCloseBtn = document.getElementById('omniCloseBtn');
+    const omniOutput = document.getElementById('omniOutput');
+    const omniStatus = document.getElementById('omniStatus');
+    const omniStatusText = document.getElementById('omniStatusText');
+    const omniMotivateBtn = document.getElementById('omniMotivateBtn');
+    const omniStopBtn = document.getElementById('omniStopBtn');
+
+    const exerciseCoach = {
+      pushups: 'Pushups: keep your body in one straight line from head to heels. Hands stay slightly wider than shoulders. Lower your chest with control, keep elbows around forty five degrees, then push the floor away. Breathe in while lowering, breathe out while pressing up.',
+      squats: 'Squats: stand with feet around shoulder width. Brace your core, push hips back, keep chest proud, and let knees track in line with toes. Go down with control, drive through mid foot and heels, and squeeze glutes at the top.',
+      deadlift: 'Deadlift: stand with the bar over mid foot. Hinge at the hips, keep your back neutral, brace hard, and pull the slack out before lifting. Drive the floor away, keep the bar close to your legs, and lock out by squeezing glutes, not by leaning back.',
+      plank: 'Plank: place elbows under shoulders, keep ribs down, squeeze glutes, and make one strong line from head to heels. Do not let hips sag or rise. Breathe slowly while keeping the core tight.',
+      lunges: 'Lunges: step forward with control, keep torso tall, and lower until both knees are close to ninety degrees. Front knee tracks over toes. Push through the front heel to return and keep balance smooth.',
+      burpees: 'Burpees: squat down, plant hands, jump feet back into a strong plank, perform the pushup only if your form stays clean, then jump feet forward and explode up. Land softly and keep breathing rhythmic.'
+    };
+
+    function setOmniSpeaking(isSpeaking) {
+      omniBtn.classList.toggle('speaking', isSpeaking);
+      omniStatus.classList.toggle('speaking', isSpeaking);
+      omniStatusText.textContent = isSpeaking ? 'Speaking...' : 'Ready';
+    }
+
+    function speakOmni(message) {
+      omniOutput.textContent = message;
+      if (!('speechSynthesis' in window)) {
+        omniStatusText.textContent = 'Voice not supported';
+        showToast('⚠ Browser voice speech is not supported here');
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const voiceLine = new SpeechSynthesisUtterance(message);
+      voiceLine.rate = 0.92;
+      voiceLine.pitch = 1.03;
+      voiceLine.volume = 1;
+      const voices = window.speechSynthesis.getVoices();
+      const preferredVoice = voices.find(v => /Google UK English Male|Microsoft David|Google US English|English/i.test(v.name));
+      if (preferredVoice) voiceLine.voice = preferredVoice;
+      voiceLine.onstart = () => setOmniSpeaking(true);
+      voiceLine.onend = () => setOmniSpeaking(false);
+      voiceLine.onerror = () => setOmniSpeaking(false);
+      window.speechSynthesis.speak(voiceLine);
+    }
+
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    }
+
+    omniBtn.addEventListener('click', () => {
+      omniPanel.classList.toggle('active');
+      if (omniPanel.classList.contains('active')) {
+        speakOmni('OMNI trainer online. Choose an exercise and I will coach your form.');
+      }
+    });
+
+    omniCloseBtn.addEventListener('click', () => omniPanel.classList.remove('active'));
+
+    document.querySelectorAll('.omni-exercise-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.exercise;
+        speakOmni(exerciseCoach[key] || 'Exercise data is loading. Choose another movement.');
+      });
+    });
+
+    omniMotivateBtn.addEventListener('click', () => {
+      speakOmni('Lock in. Control every rep. You are not chasing random effort, you are building discipline, strength, and momentum. One clean set at a time.');
+    });
+
+    omniStopBtn.addEventListener('click', () => {
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      setOmniSpeaking(false);
+      omniStatusText.textContent = 'Voice stopped';
+    });
+
+
+    // ── INIT ──
+    renderWorkouts();
+
+  });
+  </script>
+
+  <!-- PAYMENT MODAL -->
+  <div id="paymentModal" style="position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;justify-content:center;align-items:center;z-index:999999;padding:20px;">
+    <div style="width:100%;max-width:420px;background:#111827;border:1px solid rgba(255,255,255,0.1);border-radius:22px;padding:32px;box-sizing:border-box;position:relative;">
+      <button id="closePaymentModal" style="position:absolute;top:16px;right:18px;background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer;">×</button>
+
+      <h2 style="margin-top:0;font-family:'Black Ops One',cursive;font-size:2rem;background:linear-gradient(90deg,#FF4500,#CAFF00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+        Secure Checkout
+      </h2>
+
+      <p style="color:#aaa;line-height:1.6;margin-bottom:24px;">
+        Complete your PulseAI membership activation.
+      </p>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;background:#1f2937;padding:14px 16px;border-radius:12px;margin-bottom:20px;">
+        <span style="color:#ccc;">Selected Plan</span>
+        <strong id="selectedPlan" style="color:#00FFD1;">Pro Tier</strong>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;background:#1f2937;padding:14px 16px;border-radius:12px;margin-bottom:24px;">
+        <span style="color:#ccc;">Amount</span>
+        <strong id="selectedPrice" style="color:#CAFF00;">$79/mo</strong>
+      </div>
+
+      <input id="cardName" type="text" placeholder="Card Holder Name"
+        style="width:100%;padding:13px 14px;margin-bottom:12px;background:#1f2937;border:1px solid rgba(255,255,255,0.08);border-radius:12px;color:#fff;box-sizing:border-box;">
+
+      <input id="cardNumber" type="text" maxlength="19" placeholder="Card Number"
+        style="width:100%;padding:13px 14px;margin-bottom:12px;background:#1f2937;border:1px solid rgba(255,255,255,0.08);border-radius:12px;color:#fff;box-sizing:border-box;">
+
+      <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+        <input id="expiry" type="text" maxlength="5" placeholder="MM/YY"
+          style="flex:1;padding:13px 14px;background:#1f2937;border:1px solid rgba(255,255,255,0.08);border-radius:12px;color:#fff;box-sizing:border-box;">
+
+        <input id="cvv" type="password" maxlength="4" placeholder="CVV"
+          style="flex:1;min-width:0;width:100%;padding:13px 14px;background:#1f2937;border:1px solid rgba(255,255,255,0.08);border-radius:12px;color:#fff;box-sizing:border-box;">
+      </div>
+
+      <button id="payNowBtn"
+        style="width:100%;padding:15px;border:none;border-radius:50px;background:linear-gradient(135deg,#FF4500,#7B2FFF);color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;">
+        Pay Now
+      </button>
+    </div>
+  </div>
+
+</body>
+</html>

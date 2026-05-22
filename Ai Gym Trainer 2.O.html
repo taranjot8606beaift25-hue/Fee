@@ -126,6 +126,12 @@
       transition: background 0.4s ease, color 0.4s ease;
     }
 
+    
+    html, body {
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
     body::before {
       content: '';
       position: fixed; inset: 0;
@@ -1223,6 +1229,42 @@
     
     .quick-content h2 { font-family: 'Black Ops One', cursive; font-size: 2rem; margin-top: 0; margin-bottom: 16px; }
     .quick-content p { color: #aaa; margin-bottom: 20px; line-height: 1.7; font-size: 0.92rem; }
+
+
+    /* ── WORKOUT PLAN MODAL DETAILS ── */
+    .workout-plan-box {
+      display: grid;
+      gap: 14px;
+      margin: 18px 0 22px;
+    }
+    .workout-plan-card {
+      background: rgba(255,255,255,0.045);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 16px;
+      padding: 14px;
+    }
+    .workout-plan-card strong {
+      display: block;
+      color: var(--neon);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .workout-plan-card ul {
+      margin: 0;
+      padding-left: 18px;
+      color: #bdbdbd;
+      line-height: 1.65;
+      font-size: 0.9rem;
+    }
+    .workout-plan-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    @media (max-width: 520px) { .workout-plan-actions { grid-template-columns: 1fr; } }
     
     /* ── TOAST ── */
     .toast {
@@ -1324,6 +1366,46 @@
       color: var(--neon);
       background: rgba(0,255,209,0.08);
       border-color: rgba(0,255,209,0.32);
+    }
+
+    .forgot-password-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: -6px;
+    }
+
+    .forgot-password-link, .back-login-link {
+      background: none;
+      border: none;
+      color: var(--neon);
+      cursor: pointer;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.82rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 0;
+      transition: color 0.2s, text-shadow 0.2s;
+    }
+
+    .forgot-password-link:hover, .back-login-link:hover {
+      color: var(--volt);
+      text-shadow: 0 0 12px rgba(202,255,0,0.35);
+    }
+
+    .reset-helper {
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.5;
+      margin: -4px 0 4px;
+    }
+
+    .reset-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 4px;
     }
 
 
@@ -1715,6 +1797,52 @@
       .age-submit-btn { width: 100%; }
     }
 
+    /* ── SMOOTH SCROLL REVEAL ANIMATIONS ── */
+    .scroll-reveal {
+      opacity: 0;
+      transform: translateY(45px) scale(0.98);
+      filter: blur(8px);
+      transition:
+        opacity 0.85s ease,
+        transform 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+        filter 0.85s ease;
+      transition-delay: var(--reveal-delay, 0ms);
+      will-change: opacity, transform, filter;
+    }
+    .scroll-reveal.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      filter: blur(0);
+    }
+    .scroll-left { transform: translateX(-55px) scale(0.98); }
+    .scroll-right { transform: translateX(55px) scale(0.98); }
+    .scroll-zoom { transform: translateY(28px) scale(0.92); }
+    .scroll-flip { transform: perspective(900px) rotateX(10deg) translateY(40px); transform-origin: top; }
+    .scroll-left.show,
+    .scroll-right.show,
+    .scroll-zoom.show,
+    .scroll-flip.show {
+      transform: translateX(0) translateY(0) scale(1) rotateX(0);
+    }
+    .service-card.scroll-reveal.show,
+    .plan-card.scroll-reveal.show,
+    .price-card.scroll-reveal.show,
+    .test-card.scroll-reveal.show,
+    .feature.scroll-reveal.show,
+    .meal-item.scroll-reveal.show {
+      box-shadow: 0 18px 45px rgba(0,0,0,0.22);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .scroll-reveal,
+      .scroll-reveal.show {
+        opacity: 1;
+        transform: none !important;
+        filter: none;
+        transition: none;
+      }
+    }
+
+
   </style>
 </head>
 <body>
@@ -1830,31 +1958,31 @@
         <p class="section-sub">Deploy modular data layers targeting exact biometric outputs. Choose your baseline training platform beneath.</p>
       </div>
       <div class="services-grid">
-        <a href="#" class="service-card" data-img="https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=800&q=80" data-title="Neural Telemetry" data-desc="Continuous parsing of muscle recruitment metrics via dynamic sensory arrays. Real-time form optimization calibrated down to the millisecond.">
+        <a href="#" class="service-card" data-engineered="neural" data-img="https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=800&q=80" data-title="Neural Telemetry" data-desc="Continuous parsing of muscle recruitment metrics via dynamic sensory arrays. Real-time form optimization calibrated down to the millisecond.">
           <img src="https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=500&q=80" alt="Neural Telemetry" class="card-img">
           <div class="card-body">
             <span class="card-icon">🧠</span>
             <div class="card-title">Neural Telemetry</div>
             <p class="card-desc">Continuous parsing of muscle recruitment metrics via dynamic sensory arrays. Real-time form optimization calibrated down to the millisecond.</p>
-            <span class="card-tag tag-neon">Active Protocol</span>
+            <span class="card-tag tag-neon">Open Intense Plan</span>
           </div>
         </a>
-        <a href="#" class="service-card" data-img="https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=800&q=80" data-title="Metabolic Shaping" data-desc="Hyper-personalized VO2 Max targeting designed to permanently alter your resting metabolic rate and sustain caloric burn long post-session.">
+        <a href="#" class="service-card" data-engineered="metabolic" data-img="https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=800&q=80" data-title="Metabolic Shaping" data-desc="Hyper-personalized VO2 Max targeting designed to permanently alter your resting metabolic rate and sustain caloric burn long post-session.">
           <img src="https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=500&q=80" alt="Metabolic Shaping" class="card-img">
           <div class="card-body">
             <span class="card-icon">🔥</span>
             <div class="card-title">Metabolic Shaping</div>
             <p class="card-desc">Hyper-personalized VO2 Max targeting designed to permanently alter your resting metabolic rate and sustain caloric burn long post-session.</p>
-            <span class="card-tag tag-fire">Optimized</span>
+            <span class="card-tag tag-fire">Open HIIT Plan</span>
           </div>
         </a>
-        <a href="#" class="service-card" data-img="https://images.unsplash.com/photo-1517963879433-6ad2b056d712?w=800&q=80" data-title="Hypertrophy Matrices" data-desc="Automated progressive overload computation. Your macrocycles auto-correct based on sleep scores, exertion levels, and velocity thresholds.">
+        <a href="#" class="service-card" data-engineered="hypertrophy" data-img="https://images.unsplash.com/photo-1517963879433-6ad2b056d712?w=800&q=80" data-title="Hypertrophy Matrices" data-desc="Automated progressive overload computation. Your macrocycles auto-correct based on sleep scores, exertion levels, and velocity thresholds.">
           <img src="https://images.unsplash.com/photo-1517963879433-6ad2b056d712?w=500&q=80" alt="Hypertrophy Matrices" class="card-img">
           <div class="card-body">
             <span class="card-icon">⚡</span>
             <div class="card-title">Hypertrophy Matrices</div>
             <p class="card-desc">Automated progressive overload computation. Your macrocycles auto-correct based on sleep scores, exertion levels, and velocity thresholds.</p>
-            <span class="card-tag tag-volt">Adaptive</span>
+            <span class="card-tag tag-volt">Open Heavy Plan</span>
           </div>
         </a>
       </div>
@@ -2185,7 +2313,11 @@
       <div class="quick-content">
         <h2 id="modalTitle">PROTOCOL DATA</h2>
         <p id="modalDesc">Detailed kinetic packet telemetry parameters go directly here.</p>
-        <button class="btn btn-primary click-feedback" id="modalClose" style="width:100%; border:none; padding:12px; cursor:pointer;">Acknowledge Directive</button>
+        <div id="modalWorkoutPlan" class="workout-plan-box"></div>
+        <div class="workout-plan-actions">
+          <button class="btn btn-outline click-feedback" id="modalSpeakPlan" style="width:100%; padding:12px; cursor:pointer; display:none;">OMNI Speak Plan</button>
+          <button class="btn btn-primary click-feedback" id="modalClose" style="width:100%; border:none; padding:12px; cursor:pointer;">Acknowledge Directive</button>
+        </div>
       </div>
     </div>
   </div>
@@ -2204,12 +2336,27 @@
       <form class="auth-form active" id="loginForm">
         <input type="email" class="auth-input" id="loginEmail" placeholder="Email Address" required>
         <input type="password" class="auth-input" id="loginPassword" placeholder="Password" required>
+        <div class="forgot-password-row">
+          <button type="button" class="forgot-password-link click-feedback" id="forgotPasswordBtn">Forgot password?</button>
+        </div>
         <div class="auth-message" id="loginMessage"></div>
         <button type="submit" class="auth-submit click-feedback">Initialize Session</button>
         <div class="auth-divider">or</div>
         <div class="auth-social-btns">
           <button type="button" class="auth-social-btn click-feedback">🌐 Google</button>
           <button type="button" class="auth-social-btn click-feedback"><svg class="iphone-apple-logo" viewBox="0 0 384 512" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M318.7 268.7c-.2-36.7 16.4-64.5 50.9-85.5-19.3-27.7-48.5-42.9-87.2-45.8-36.6-2.9-76.6 21.4-91.2 21.4-15.5 0-50.9-20.4-78.7-19.5-57 .9-117.4 45.5-117.4 136.5 0 26.9 4.9 54.7 14.8 83.4 13.2 37.8 60.8 130.7 110.5 129.2 26-.6 44.3-18.5 78.1-18.5 32.8 0 49.8 18.5 78.7 18.5 50.1-.7 93.2-85.1 105.7-123 7.2-20.7 10.4-41.4 10.6-61.2zM239.3 102.2C267.5 68.8 264.2 38.4 263.4 27c-24.9 1.4-53.8 16.9-70.2 35.9-18.1 20.8-28.6 46.6-26.3 75.4 27.2 2.1 52.5-11.9 72.4-36.1z"/></svg> iPhone</button>
+        </div>
+      </form>
+      <!-- Forgot Password Form -->
+      <form class="auth-form" id="forgotForm">
+        <p class="reset-helper">Enter your registered email and choose a new password for this prototype login.</p>
+        <input type="email" class="auth-input" id="resetEmail" placeholder="Registered Email Address" required>
+        <input type="password" class="auth-input" id="resetPassword" placeholder="New Password" required>
+        <input type="password" class="auth-input" id="resetConfirmPassword" placeholder="Confirm New Password" required>
+        <div class="auth-message" id="resetMessage"></div>
+        <button type="submit" class="auth-submit click-feedback">Reset Password</button>
+        <div class="reset-actions">
+          <button type="button" class="back-login-link click-feedback" id="backToLoginBtn">Back to login</button>
         </div>
       </form>
       <!-- Signup Form -->
@@ -2404,6 +2551,9 @@
     const authTabBtns   = document.querySelectorAll('.auth-tab-btn');
     const loginForm     = document.getElementById('loginForm');
     const signupForm    = document.getElementById('signupForm');
+    const forgotForm    = document.getElementById('forgotForm');
+    const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
+    const backToLoginBtn = document.getElementById('backToLoginBtn');
     const openAuthModal = document.getElementById('openAuthModal');
     const profileModal = document.getElementById('profile-modal');
     const profileInfo = document.getElementById('profileInfo');
@@ -2460,6 +2610,7 @@
         const type = btn.dataset.auth;
         loginForm.classList.toggle('active', type === 'login');
         signupForm.classList.toggle('active', type === 'signup');
+        if (forgotForm) forgotForm.classList.remove('active');
       });
     });
 
@@ -2497,6 +2648,10 @@
     const signupConfirmPassword = document.getElementById('signupConfirmPassword');
     const loginMessage = document.getElementById('loginMessage');
     const signupMessage = document.getElementById('signupMessage');
+    const resetEmail = document.getElementById('resetEmail');
+    const resetPassword = document.getElementById('resetPassword');
+    const resetConfirmPassword = document.getElementById('resetConfirmPassword');
+    const resetMessage = document.getElementById('resetMessage');
 
     function getRegisteredUsers() {
       try {
@@ -2520,9 +2675,72 @@
       loginMessage.textContent = '';
       signupMessage.className = 'auth-message';
       signupMessage.textContent = '';
+      if (resetMessage) {
+        resetMessage.className = 'auth-message';
+        resetMessage.textContent = '';
+      }
+    }
+
+    function showLoginForm() {
+      authTabBtns.forEach(b => b.classList.remove('active'));
+      const loginTab = document.querySelector('.auth-tab-btn[data-auth="login"]');
+      if (loginTab) {
+        loginTab.classList.add('active');
+        moveAuthIndicator(loginTab);
+      }
+      loginForm.classList.add('active');
+      signupForm.classList.remove('active');
+      if (forgotForm) forgotForm.classList.remove('active');
+      clearAuthMessages();
+    }
+
+    function showForgotForm() {
+      authTabBtns.forEach(b => b.classList.remove('active'));
+      loginForm.classList.remove('active');
+      signupForm.classList.remove('active');
+      if (forgotForm) forgotForm.classList.add('active');
+      if (loginEmail && resetEmail) resetEmail.value = loginEmail.value.trim();
+      clearAuthMessages();
     }
 
     authTabBtns.forEach(btn => btn.addEventListener('click', clearAuthMessages));
+    if (forgotPasswordBtn) forgotPasswordBtn.addEventListener('click', showForgotForm);
+    if (backToLoginBtn) backToLoginBtn.addEventListener('click', showLoginForm);
+
+    if (forgotForm) forgotForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = resetEmail.value.trim().toLowerCase();
+      const newPassword = resetPassword.value;
+      const confirmPassword = resetConfirmPassword.value;
+      const users = getRegisteredUsers();
+      const userIndex = users.findIndex(user => user.email === email);
+
+      if (userIndex === -1) {
+        setAuthMessage(resetMessage, 'No account found with this email. Please sign up first.', 'error');
+        showToast('⚠ EMAIL NOT REGISTERED');
+        return;
+      }
+
+      if (newPassword.length < 4) {
+        setAuthMessage(resetMessage, 'New password must be at least 4 characters.', 'error');
+        showToast('⚠ PASSWORD TOO SHORT');
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        setAuthMessage(resetMessage, 'New passwords do not match.', 'error');
+        showToast('⚠ PASSWORDS DO NOT MATCH');
+        return;
+      }
+
+      users[userIndex].password = newPassword;
+      users[userIndex].updatedAt = new Date().toISOString();
+      saveRegisteredUsers(users);
+      setAuthMessage(resetMessage, 'Password reset successful. You can login now.', 'success');
+      showToast('✓ PASSWORD RESET SUCCESSFUL');
+      forgotForm.reset();
+      setTimeout(showLoginForm, 900);
+    });
 
     loginForm.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -2626,7 +2844,7 @@
     function renderWorkouts(filter = 'all') {
       const filtered = filter === 'all' ? currentWorkoutDataset : currentWorkoutDataset.filter(w => w.type === filter);
       plansGrid.innerHTML = filtered.map(w => `
-        <div class="plan-card" data-id="${w.id}">
+        <div class="plan-card" data-id="${w.id}" data-workout-name="${w.name}" data-workout-type="${w.type}" data-workout-level="${w.level}" data-workout-duration="${w.duration}">
           <img src="${w.img}" alt="${w.name}" class="plan-img">
           <div class="plan-body">
             <div class="plan-meta">
@@ -2636,6 +2854,7 @@
             </div>
             <div class="plan-name">${w.name}</div>
             <p class="plan-desc">${w.desc}</p>
+            <button class="btn btn-outline click-feedback" style="width:100%;margin-top:1rem;border-width:1px;padding:0.65rem 1rem;">View Workout Plan</button>
           </div>
         </div>
       `).join('');
@@ -2822,7 +3041,137 @@
     const modalImg    = document.getElementById('modalImg');
     const modalTitle  = document.getElementById('modalTitle');
     const modalDesc   = document.getElementById('modalDesc');
+    const modalPlan   = document.getElementById('modalWorkoutPlan');
+    const modalSpeakPlan = document.getElementById('modalSpeakPlan');
     const modalClose  = document.getElementById('modalClose');
+
+    let currentPlanSpeech = '';
+
+    const workoutExerciseLibrary = {
+      strength: {
+        warmup: ['5 min light jogging or jumping jacks', 'Arm circles × 20', 'Bodyweight squats × 15'],
+        main: ['Pushups: 3 sets × 12 reps', 'Squats: 4 sets × 12 reps', 'Lunges: 3 sets × 10 each leg', 'Plank: 3 rounds × 45 sec'],
+        finisher: ['Mountain climbers: 3 rounds × 30 sec', 'Slow stretching: 5 min']
+      },
+      endurance: {
+        warmup: ['5 min brisk walk', 'High knees × 30 sec', 'Dynamic leg swings × 12 each side'],
+        main: ['Run or cycle: 20 min steady pace', 'Burpees: 3 sets × 10 reps', 'Jump rope: 4 rounds × 45 sec', 'Fast walk cooldown: 5 min'],
+        finisher: ['Deep breathing: 2 min', 'Calf and hamstring stretch: 4 min']
+      },
+      recovery: {
+        warmup: ['Slow walk: 3 min', 'Neck and shoulder rolls × 10', 'Hip circles × 10 each side'],
+        main: ['Cat-cow stretch: 3 sets × 10', 'Child pose: 3 rounds × 30 sec', 'Glute bridge: 3 sets × 12', 'Easy plank: 3 rounds × 25 sec'],
+        finisher: ['Full body stretching: 8 min', 'Slow nasal breathing: 2 min']
+      }
+    };
+
+    function getWorkoutPlanHTML(type, name, level, duration) {
+      const plan = workoutExerciseLibrary[type] || workoutExerciseLibrary.strength;
+      return `
+        <div class="workout-plan-card">
+          <strong>Workout Plan</strong>
+          <ul>
+            <li><b>Name:</b> ${name}</li>
+            <li><b>Level:</b> ${level}</li>
+            <li><b>Time:</b> ${duration}</li>
+          </ul>
+        </div>
+        <div class="workout-plan-card">
+          <strong>Warm Up</strong>
+          <ul>${plan.warmup.map(item => `<li>${item}</li>`).join('')}</ul>
+        </div>
+        <div class="workout-plan-card">
+          <strong>Main Exercises</strong>
+          <ul>${plan.main.map(item => `<li>${item}</li>`).join('')}</ul>
+        </div>
+        <div class="workout-plan-card">
+          <strong>Finisher / Cooldown</strong>
+          <ul>${plan.finisher.map(item => `<li>${item}</li>`).join('')}</ul>
+        </div>
+      `;
+    }
+
+    function getWorkoutPlanSpeech(type, name, level, duration) {
+      const plan = workoutExerciseLibrary[type] || workoutExerciseLibrary.strength;
+      return `${name}. Level ${level}. Duration ${duration}. Warm up with ${plan.warmup.join(', ')}. Main workout: ${plan.main.join(', ')}. Finish with ${plan.finisher.join(', ')}.`;
+    }
+
+
+    const engineeredPerformancePlans = {
+      neural: {
+        level: 'High Intensity',
+        duration: '45 Min',
+        focus: 'Explosive control, speed, reaction and full-body athletic output',
+        warmup: ['Jump rope: 3 min', 'Dynamic pushups: 2 × 10', 'Bodyweight squats: 2 × 15', 'Shoulder + hip mobility: 2 min'],
+        main: ['Plyometric pushups: 4 sets × 8 reps', 'Jump squats: 4 sets × 12 reps', 'Battle rope slams or fast mountain climbers: 5 rounds × 30 sec', 'Burpee broad jumps: 4 sets × 8 reps', 'Plank shoulder taps: 3 sets × 30 sec'],
+        finisher: ['EMOM 6 min: 8 burpees + 12 high knees each minute', 'Cooldown stretching: 5 min'],
+        note: 'Keep every rep sharp. Stop the set if form breaks.'
+      },
+      metabolic: {
+        level: 'Very High Intensity',
+        duration: '35 Min',
+        focus: 'Fat burn, stamina, VO2 max and fast calorie output',
+        warmup: ['Brisk jog: 4 min', 'High knees: 2 × 30 sec', 'Lunges: 2 × 10 each leg', 'Arm swings + ankle hops: 2 min'],
+        main: ['Sprint intervals: 8 rounds × 20 sec sprint / 40 sec walk', 'Burpees: 5 sets × 12 reps', 'Jump rope: 5 rounds × 60 sec', 'Kettlebell swings or squat thrusts: 4 sets × 15 reps', 'Mountain climbers: 4 rounds × 45 sec'],
+        finisher: ['Tabata: 20 sec work / 10 sec rest × 8 rounds', 'Slow walk + deep breathing: 5 min'],
+        note: 'This is intense. Take extra rest if breathing or form goes out of control.'
+      },
+      hypertrophy: {
+        level: 'Advanced Intensive',
+        duration: '60 Min',
+        focus: 'Muscle growth, heavy volume, strength and progressive overload',
+        warmup: ['Light cardio: 5 min', 'Band pull-aparts: 2 × 15', 'Empty-bar squats or bodyweight squats: 2 × 15', 'Pushups: 2 × 10'],
+        main: ['Barbell squats or goblet squats: 5 sets × 6–8 reps', 'Bench press or pushups: 5 sets × 8–10 reps', 'Deadlift or Romanian deadlift: 4 sets × 6–8 reps', 'Pullups or lat pulldown: 4 sets × 8–10 reps', 'Walking lunges: 3 sets × 12 each leg', 'Shoulder press: 4 sets × 8 reps'],
+        finisher: ['Drop-set finisher: curls + triceps dips 3 rounds', 'Full body stretch: 6 min'],
+        note: 'Use heavy but clean weight. Rest 90–120 sec on main lifts.'
+      }
+    };
+
+    function getEngineeredPlanHTML(key, name) {
+      const plan = engineeredPerformancePlans[key] || engineeredPerformancePlans.metabolic;
+      return `
+        <div class="workout-plan-card">
+          <strong>High Intensive Workout</strong>
+          <ul>
+            <li><b>Name:</b> ${name}</li>
+            <li><b>Level:</b> ${plan.level}</li>
+            <li><b>Time:</b> ${plan.duration}</li>
+            <li><b>Focus:</b> ${plan.focus}</li>
+          </ul>
+        </div>
+        <div class="workout-plan-card">
+          <strong>Warm Up</strong>
+          <ul>${plan.warmup.map(item => `<li>${item}</li>`).join('')}</ul>
+        </div>
+        <div class="workout-plan-card">
+          <strong>Main High-Intensity Block</strong>
+          <ul>${plan.main.map(item => `<li>${item}</li>`).join('')}</ul>
+        </div>
+        <div class="workout-plan-card">
+          <strong>Finisher / Cooldown</strong>
+          <ul>${plan.finisher.map(item => `<li>${item}</li>`).join('')}</ul>
+        </div>
+        <div class="workout-plan-card">
+          <strong>Trainer Note</strong>
+          <ul><li>${plan.note}</li></ul>
+        </div>
+      `;
+    }
+
+    function getEngineeredPlanSpeech(key, name) {
+      const plan = engineeredPerformancePlans[key] || engineeredPerformancePlans.metabolic;
+      return `${name}. ${plan.level}. Duration ${plan.duration}. Focus: ${plan.focus}. Warm up with ${plan.warmup.join(', ')}. Main workout: ${plan.main.join(', ')}. Finish with ${plan.finisher.join(', ')}. Trainer note: ${plan.note}`;
+    }
+
+    if (modalSpeakPlan) {
+      modalSpeakPlan.addEventListener('click', () => {
+        if (currentPlanSpeech && typeof speakOmni === 'function') speakOmni(currentPlanSpeech);
+        else if (currentPlanSpeech && 'speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          window.speechSynthesis.speak(new SpeechSynthesisUtterance(currentPlanSpeech));
+        }
+      });
+    }
 
     function setupModalListeners() {
       document.querySelectorAll('.service-card, .plan-card').forEach(card => {
@@ -2833,9 +3182,30 @@
           const descEl  = card.querySelector('.card-desc, .plan-desc');
           const dataImg = card.dataset.img;
           if (imgEl && titleEl && descEl) {
+            const isWorkoutCard = card.classList.contains('plan-card');
+            const name = card.dataset.workoutName || titleEl.textContent.trim();
+            const type = card.dataset.workoutType || 'strength';
+            const level = card.dataset.workoutLevel || 'All Levels';
+            const duration = card.dataset.workoutDuration || '30 Min';
+
             modalImg.src = dataImg || imgEl.src;
-            modalTitle.textContent = titleEl.textContent.toUpperCase();
+            modalTitle.textContent = name.toUpperCase();
             modalDesc.textContent  = descEl.textContent;
+
+            if (isWorkoutCard) {
+              modalPlan.innerHTML = getWorkoutPlanHTML(type, name, level, duration);
+              currentPlanSpeech = getWorkoutPlanSpeech(type, name, level, duration);
+              if (modalSpeakPlan) modalSpeakPlan.style.display = 'inline-block';
+            } else if (card.dataset.engineered) {
+              modalPlan.innerHTML = getEngineeredPlanHTML(card.dataset.engineered, name);
+              currentPlanSpeech = getEngineeredPlanSpeech(card.dataset.engineered, name);
+              if (modalSpeakPlan) modalSpeakPlan.style.display = 'inline-block';
+            } else {
+              modalPlan.innerHTML = '';
+              currentPlanSpeech = '';
+              if (modalSpeakPlan) modalSpeakPlan.style.display = 'none';
+            }
+
             modal.classList.add('active');
           }
         });
@@ -2930,20 +3300,53 @@
       showToast('✓ MESH ARRAY CHANNELS STATUS: SECURE & STABLE');
     });
 
-    // ── SCROLL REVEAL ──
-    const reveals = document.querySelectorAll('.reveal');
-    reveals.forEach(r => { r.style.opacity = '0'; r.style.animation = 'none'; });
+    // ── SMOOTH SCROLL REVEAL ANIMATIONS ──
+    const scrollTargets = document.querySelectorAll([
+      'section',
+      '.service-card',
+      '.plan-card',
+      '.price-card',
+      '.test-card',
+      '.feature',
+      '.step',
+      '.diet-panel',
+      '.diet-result',
+      '.macro-card',
+      '.meal-item',
+      '.footer-col',
+      '.footer-brand'
+    ].join(','));
 
-    const revealOnScroll = () => {
-      reveals.forEach(el => {
-        if (el.getBoundingClientRect().top < window.innerHeight * 0.82) {
-          el.style.opacity = '1';
-          el.style.animation = 'revealUp 0.7s ease both';
+    scrollTargets.forEach((el, index) => {
+      el.classList.add('scroll-reveal');
+
+      if (el.matches('.how-img, .ai-img-wrap, .diet-panel')) el.classList.add('scroll-left');
+      if (el.matches('.steps, .features, .diet-result')) el.classList.add('scroll-right');
+      if (el.matches('.service-card, .plan-card, .price-card, .test-card, .macro-card')) el.classList.add('scroll-zoom');
+      if (el.matches('section')) el.classList.add('scroll-flip');
+
+      const delay = Math.min((index % 6) * 90, 450);
+      el.style.setProperty('--reveal-delay', `${delay}ms`);
+    });
+
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('show');
+          revealObserver.unobserve(entry.target);
         }
       });
-    };
-    window.addEventListener('scroll', revealOnScroll, { passive: true });
-    revealOnScroll();
+    }, {
+      threshold: 0.12,
+      rootMargin: '0px 0px -70px 0px'
+    });
+
+    scrollTargets.forEach(el => revealObserver.observe(el));
+
+    // Fallback for older browsers
+    if (!('IntersectionObserver' in window)) {
+      scrollTargets.forEach(el => el.classList.add('show'));
+    }
 
 
 
@@ -3242,7 +3645,8 @@
     <div style="width:100%;max-width:420px;background:#111827;border:1px solid rgba(255,255,255,0.1);border-radius:22px;padding:32px;box-sizing:border-box;position:relative;">
       <button id="closePaymentModal" style="position:absolute;top:16px;right:18px;background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer;">×</button>
 
-      <h2 style="margin-top:0;font-family:'Black Ops One',cursive;font-size:2rem;background:linear-gradient(90deg,#FF4500,#CAFF00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+<h2 style="margin-top:0;font-family:'Black Ops One',cursive;font-size:2rem;background:linear-gradient(90deg,#FF4500,#CAFF00);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+  
         Secure Checkout
       </h2>
 
